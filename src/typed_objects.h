@@ -18,6 +18,8 @@ class TypedObject : public node::ObjectWrap {
     TypedObject();
     ~TypedObject();
     unsigned int seed;
+    //auto defaultValue;
+    //int defaultValueType;
     static v8::Handle<v8::Value> New(const v8::Arguments &args);
 };
 
