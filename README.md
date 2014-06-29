@@ -1,0 +1,9 @@
+node_typed_objects
+==========
+http://wiki.ecmascript.org/doku.php?id=harmony:typed_objects
+Implemented using xxhash and Hopscotch-Hashing
+
+License
+=======
+MIT.
+Copyright (C) 2013 Kazuyuki Tanimura All rights reserved except those specifically granted herein.
