@@ -5,15 +5,15 @@ Implemented using xxhash and Hopscotch-Hashing
 
 Install
 ==========
-  npm install
+    npm install
 
 Test
 ==========
-  npm test
+    npm test
 
 Setup
 ==========
-  ln -fs ../../pre-commit.sh .git/hooks/pre-commit
+    ln -fs ../../pre-commit.sh .git/hooks/pre-commit
 
 License
 ==========
