@@ -2,11 +2,12 @@
   "version": "0.0.1"
 , "engine": "node >= 0.10.29"
 , "description": "typed_objects implemented using xxhash and Hopscotch-Hashing for node.js"
-, "main": "index.js"
+, "main": "./index.js"
 , "keywords": [ "hash", "xxhash", "typed_objects", "hashtable", "hopscotch" ]
+, "repository": "https://github.com/kazuyukitanimura/node_typed_objects.git"
 , "author": {
-    "name": "kazuyukitanimura",
-    "email": "kazuyukitanimura@gmail.com"
+    "name": "kazuyukitanimura"
+  , "email": "kazuyukitanimura@gmail.com"
   }
 , "license": "MIT"
 }
