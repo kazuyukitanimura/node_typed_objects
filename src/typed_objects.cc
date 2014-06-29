@@ -26,6 +26,7 @@ Handle<Value> TypedObject::New(const Arguments& args) {
   }
 
   TypedObject* obj = new TypedObject();
+  obj->seed = rdtsc();
   obj->Wrap(args.This());
 
   return args.This();
@@ -42,9 +43,9 @@ void TypedObject::Init(Handle<Object> exports) {
   Local<String> name = String::NewSymbol("TypedObject");
 
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
-  constructor = Persistent<FunctionTemplate>::New(tpl);
+  Persistent<FunctionTemplate> constructor = Persistent<FunctionTemplate>::New(tpl);
 #else
-  constructor = Persistent<FunctionTemplate>::New(isolate, tpl);
+  Persistent<FunctionTemplate> constructor = Persistent<FunctionTemplate>::New(isolate, tpl);
 #endif
   constructor->InstanceTemplate()->SetInternalFieldCount(1);
   constructor->SetClassName(name);
@@ -64,5 +65,5 @@ extern "C" {
     TypedObject::Init(exports);
   }
 
-  NODE_MODULE(typed_objects, init);
+  NODE_MODULE(typed_objects, init)
 }
