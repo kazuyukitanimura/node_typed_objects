@@ -1,7 +1,7 @@
 {
   'targets': [
     {
-      'target_name': 'node_typed_objects',
+      'target_name': 'typed_objects',
       'include_dirs': [ 'src' ],
       'sources': [
         'src/xxhash.h',
