@@ -8,11 +8,14 @@
 using namespace v8;
 
 Local<Value> TypedObject::Get(Handle<Value> key) {
-
+  return defaultValue;
 }
 
 bool TypedObject::Set(Handle<Value> key, Handle<Value> value, PropertyAttribute attribs) {
-
+  String::AsciiValue keyAscii(key->ToString());
+  const char *keyChar = *keyAscii;
+  size_t keyAsciiLen = keyAscii.length();
+  unsigned int hash = ::XXH32(keyChar, keyAsciiLen, seed);
 }
 
 bool TypedObject::Delete(Handle<Value> key) {
@@ -68,7 +71,7 @@ Handle<Value> TypedObject::New(const Arguments& args) {
     Local<Array> keys = object->GetOwnPropertyNames();
     for (uint32_t i = keys->Length(); i--;) {
       Local<Value> key = keys->Get(i);
-      object->Get(key); // Call setter
+      obj->Set(key, object->Get(key));
     }
   }
 

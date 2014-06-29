@@ -13,6 +13,9 @@ unsigned int rdtsc() {
 class TypedObject : public node::ObjectWrap {
   public:
     static void Init(v8::Handle<v8::Object> exports);
+    v8::Local<v8::Value> Get(v8::Handle<v8::Value> key);
+    bool Set(v8::Handle<v8::Value> key, v8::Handle<v8::Value> value, v8::PropertyAttribute attribs=v8::None);
+    bool Delete(v8::Handle<v8::Value> key);
 
   private:
     TypedObject();
@@ -24,9 +27,6 @@ class TypedObject : public node::ObjectWrap {
       Int
     };
     ValueTypes defaultValueType;
-    static v8::Local<v8::Value> Get(v8::Handle<v8::Value> key);
-    static bool Set(v8::Handle<v8::Value> key, v8::Handle<v8::Value> value, v8::PropertyAttribute attribs=v8::None);
-    static bool Delete(v8::Handle<v8::Value> key);
     static v8::Handle<v8::Value> New(const v8::Arguments &args);
 };
 
