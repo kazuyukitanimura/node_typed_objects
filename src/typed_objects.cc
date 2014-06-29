@@ -7,6 +7,18 @@
 
 using namespace v8;
 
+Local<Value> TypedObject::Get(Handle<Value> key) {
+
+}
+
+bool TypedObject::Set(Handle<Value> key, Handle<Value> value, PropertyAttribute attribs) {
+
+}
+
+bool TypedObject::Delete(Handle<Value> key) {
+
+}
+
 Handle<Value> TypedObject::New(const Arguments& args) {
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
   HandleScope scope;
@@ -35,7 +47,7 @@ Handle<Value> TypedObject::New(const Arguments& args) {
 #endif
     ));
   }
-  if (!args[1]->IsNumber()) { // it will also check !args[1]->IsInt32() && !args[1]->IsUint32()
+  if (!args[0]->IsNumber()) { // it will also check !args[1]->IsInt32() && !args[1]->IsUint32()
     return ThrowException(Exception::Error(
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
       String::New("Unsupported default value.")
@@ -47,19 +59,18 @@ Handle<Value> TypedObject::New(const Arguments& args) {
 
   TypedObject* obj = new TypedObject();
   obj->seed = rdtsc();
-  //obj->defaultValue = args[1];
-  //obj->defaultValueType = internal::Internals::GetInstanceType(args[1]);
+  obj->defaultValue = args[0]->ToNumber();
+  obj->defaultValueType = (args[0]->IsInt32() || args[0]->IsUint32())? Int: Double;
+  obj->Wrap(args.This());
+
   if (argsLen > 1 && args[1]->IsObject()) {
     Local<Object> object = args[1]->ToObject();
-    // how do we get a list of object keys?
     Local<Array> keys = object->GetOwnPropertyNames();
     for (uint32_t i = keys->Length(); i--;) {
-      //Handle<String> key = keys->GET(i);
-      //Local<String> key = String::NewSymbol(keys->GET(i));
-      //object->GET(key); // Call setter
+      Local<Value> key = keys->Get(i);
+      object->Get(key); // Call setter
     }
   }
-  obj->Wrap(args.This());
 
   return args.This();
 }

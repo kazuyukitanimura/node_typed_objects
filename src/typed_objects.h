@@ -18,8 +18,15 @@ class TypedObject : public node::ObjectWrap {
     TypedObject();
     ~TypedObject();
     unsigned int seed;
-    //auto defaultValue;
-    //int defaultValueType;
+    v8::Local<v8::Number> defaultValue;
+    enum ValueTypes {
+      Double,
+      Int
+    };
+    ValueTypes defaultValueType;
+    static v8::Local<v8::Value> Get(v8::Handle<v8::Value> key);
+    static bool Set(v8::Handle<v8::Value> key, v8::Handle<v8::Value> value, v8::PropertyAttribute attribs=v8::None);
+    static bool Delete(v8::Handle<v8::Value> key);
     static v8::Handle<v8::Value> New(const v8::Arguments &args);
 };
 
