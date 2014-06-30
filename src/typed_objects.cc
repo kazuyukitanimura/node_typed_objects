@@ -7,32 +7,52 @@
 
 using namespace v8;
 
-Handle<Value> TypedObject::Get(Local<String> key, const AccessorInfo& info) {
+Handle<Value> TypedObject::Get(const Arguments& args) {
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
   HandleScope scope;
 #else
   Isolate* isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
 #endif
-  //TypedObject* obj = ObjectWrap::Unwrap<TypedObject>(info.Holder());
-  TypedObject* obj = (TypedObject*) External::Unwrap(info.Holder());
+
+  if (args.Length() != 1) {
+    return ThrowException(Exception::Error(
+#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
+      String::New("TypedObject#Get takes exactly one argument.")
+#else
+      String::NewFromUtf8(isolate, "TypedObject#Get takes exactly one argument.")
+#endif
+    ));
+  }
+
+  TypedObject* obj = ObjectWrap::Unwrap<TypedObject>(args.This());
   return scope.Close(obj->defaultValue);
 }
 
-Handle<Value> TypedObject::Set(Local<String> key, Local<Value> value, const AccessorInfo& info) {
+Handle<Value> TypedObject::Set(const Arguments& args) {
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
   HandleScope scope;
 #else
   Isolate* isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
 #endif
-  //TypedObject* obj = ObjectWrap::Unwrap<TypedObject>(info.Holder());
-  TypedObject* obj = (TypedObject*) External::Unwrap(info.Holder());
-  String::AsciiValue keyAscii(key);
+
+  if (args.Length() != 2) {
+    return ThrowException(Exception::Error(
+#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
+      String::New("TypedObject#Set takes exactly two arguments.")
+#else
+      String::NewFromUtf8(isolate, "TypedObject#Set takes exactly two arguments.")
+#endif
+    ));
+  }
+
+  TypedObject* obj = ObjectWrap::Unwrap<TypedObject>(args.This());
+  String::AsciiValue keyAscii(args[0]->ToString());
   unsigned int hash = ::XXH32(*keyAscii, keyAscii.length(), obj->seed);
 }
 
-Handle<Integer> TypedObject::Has(Local<String> key, const AccessorInfo& info) {
+Handle<Value> TypedObject::Has(const Arguments& args) {
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
   HandleScope scope;
 #else
@@ -42,17 +62,7 @@ Handle<Integer> TypedObject::Has(Local<String> key, const AccessorInfo& info) {
 
 }
 
-Handle<Boolean> TypedObject::Del(Local<String> key, const AccessorInfo& info) {
-#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
-  HandleScope scope;
-#else
-  Isolate* isolate = Isolate::GetCurrent();
-  HandleScope scope(isolate);
-#endif
-
-}
-
-Handle<Array> TypedObject::For(const AccessorInfo& info) {
+Handle<Value> TypedObject::Del(const Arguments& args) {
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
   HandleScope scope;
 #else
@@ -136,6 +146,10 @@ void TypedObject::Init(Handle<Object> exports) {
   constructor->InstanceTemplate()->SetInternalFieldCount(1);
   constructor->SetClassName(name);
   //constructor->PrototypeTemplate()->SetNamedPropertyHandler(Get, Set, Has, Del, For);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "get", Get);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "set", Set);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "has", Has);
+  NODE_SET_PROTOTYPE_METHOD(constructor, "del", Del);
 
   exports->Set(name, constructor->GetFunction());
 }

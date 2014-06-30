@@ -7,17 +7,17 @@ describe('TypedObject', function() {
     'b': 1.2,
     3: 1.3
   });
-  to.A = 2.1;
-  to['B-'] = 2.2;
+  to.set('A', 2.1);
+  to.set('B-', 2.2);
   describe('#Get', function() {
     it('should to the expected value', function() {
       console.log(to);
-      assert.deepEqual(to.a, 1.1);
-      assert.deepEqual(to.b, 1.2);
-      assert.deepEqual(to[3], 1.3);
-      assert.deepEqual(to.A, 2.1);
-      assert.deepEqual(to['B-'], 2.2);
-      assert.deepEqual(to.C, 1.0); // default value
+      assert.deepEqual(to.get('a'), 1.1);
+      assert.deepEqual(to.get('b'), 1.2);
+      assert.deepEqual(to.get('3'), 1.3);
+      assert.deepEqual(to.get('A'), 2.1);
+      assert.deepEqual(to.get('B-'), 2.2);
+      assert.deepEqual(to.get('C'), 1.0); // default value
     });
   });
 });

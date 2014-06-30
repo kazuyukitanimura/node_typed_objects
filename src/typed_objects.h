@@ -25,11 +25,10 @@ class TypedObject : public node::ObjectWrap {
     };
     ValueTypes defaultValueType;
     static v8::Handle<v8::Value> New(const v8::Arguments &args);
-    static v8::Handle<v8::Value> Get(v8::Local<v8::String> key, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Value> Set(v8::Local<v8::String> key, v8::Local<v8::Value> value, const v8::AccessorInfo &info);
-    static v8::Handle<v8::Integer> Has(v8::Local<v8::String> key, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Boolean> Del(v8::Local<v8::String> key, const v8::AccessorInfo& info);
-    static v8::Handle<v8::Array> For(const v8::AccessorInfo& info);
+    static v8::Handle<v8::Value> Get(const v8::Arguments &args);
+    static v8::Handle<v8::Value> Set(const v8::Arguments &args);
+    static v8::Handle<v8::Value> Has(const v8::Arguments &args);
+    static v8::Handle<v8::Value> Del(const v8::Arguments &args);
 };
 
 #endif
