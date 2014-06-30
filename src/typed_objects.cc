@@ -7,7 +7,7 @@
 
 using namespace v8;
 
-Local<Value> TypedObject::Get(Handle<Value> key) {
+Handle<Value> TypedObject::Get(Local<String> name, const AccessorInfo& info) {
   return defaultValue;
 }
 
@@ -62,7 +62,7 @@ Handle<Value> TypedObject::New(const Arguments& args) {
 
   TypedObject* obj = new TypedObject();
   obj->seed = rdtsc();
-  obj->defaultValue = args[0]->ToNumber();
+  obj->defaultValue = args[0];
   obj->defaultValueType = (args[0]->IsInt32() || args[0]->IsUint32())? Int: Double;
   obj->Wrap(args.This());
 
@@ -95,9 +95,7 @@ void TypedObject::Init(Handle<Object> exports) {
 #endif
   constructor->InstanceTemplate()->SetInternalFieldCount(1);
   constructor->SetClassName(name);
-
-  //NODE_SET_PROTOTYPE_METHOD(constructor, "update", Update);
-  //NODE_SET_PROTOTYPE_METHOD(constructor, "digest", Digest);
+  constructor->PrototypeTemplate()->SetNamedPropertyHandler(Get);
 
   exports->Set(name, constructor->GetFunction());
 }
