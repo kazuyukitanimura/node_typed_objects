@@ -7,18 +7,26 @@
 
 using namespace v8;
 
-Handle<Value> TypedObject::Get(Local<String> name, const AccessorInfo& info) {
+Handle<Value> TypedObject::Get(Local<String> key, const AccessorInfo& info) {
   return defaultValue;
 }
 
-bool TypedObject::Set(Handle<Value> key, Handle<Value> value, PropertyAttribute attribs) {
-  String::AsciiValue keyAscii(key->ToString());
+Handle<Value> TypedObject::Set(Local<String> key, Local<Value> value, const AccessorInfo& info) {
+  String::AsciiValue keyAscii(key);
   const char *keyChar = *keyAscii;
   size_t keyAsciiLen = keyAscii.length();
   unsigned int hash = ::XXH32(keyChar, keyAsciiLen, seed);
 }
 
-bool TypedObject::Delete(Handle<Value> key) {
+Handle<Integer> TypedObject::Has(Local<String> key, const AccessorInfo& info) {
+
+}
+
+Handle<Boolean> TypedObject::Del(Local<String> key, const AccessorInfo& info) {
+
+}
+
+Handle<Array> TypedObject::For(const AccessorInfo& info) {
 
 }
 
@@ -70,8 +78,8 @@ Handle<Value> TypedObject::New(const Arguments& args) {
     Local<Object> object = args[1]->ToObject();
     Local<Array> keys = object->GetOwnPropertyNames();
     for (uint32_t i = keys->Length(); i--;) {
-      Local<Value> key = keys->Get(i);
-      obj->Set(key, object->Get(key));
+      Local<String> key = keys->Get(i)->ToString();
+      //obj->Set(key, object->Get(key));
     }
   }
 
@@ -95,7 +103,7 @@ void TypedObject::Init(Handle<Object> exports) {
 #endif
   constructor->InstanceTemplate()->SetInternalFieldCount(1);
   constructor->SetClassName(name);
-  constructor->PrototypeTemplate()->SetNamedPropertyHandler(Get);
+  constructor->PrototypeTemplate()->SetNamedPropertyHandler(Get, Set, Has, Del, For);
 
   exports->Set(name, constructor->GetFunction());
 }
