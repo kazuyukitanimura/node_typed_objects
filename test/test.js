@@ -11,6 +11,7 @@ describe('TypedObject', function() {
   to['B-'] = 2.2;
   describe('#Get', function() {
     it('should to the expected value', function() {
+      console.log(to);
       assert.deepEqual(to.a, 1.1);
       assert.deepEqual(to.b, 1.2);
       assert.deepEqual(to[3], 1.3);

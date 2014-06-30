@@ -14,7 +14,8 @@ Handle<Value> TypedObject::Get(Local<String> key, const AccessorInfo& info) {
   Isolate* isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
 #endif
-  TypedObject* obj = ObjectWrap::Unwrap<TypedObject>(info.This());
+  //TypedObject* obj = ObjectWrap::Unwrap<TypedObject>(info.Holder());
+  TypedObject* obj = (TypedObject*) External::Unwrap(info.Holder());
   return scope.Close(obj->defaultValue);
 }
 
@@ -25,11 +26,10 @@ Handle<Value> TypedObject::Set(Local<String> key, Local<Value> value, const Acce
   Isolate* isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
 #endif
-  TypedObject* obj = ObjectWrap::Unwrap<TypedObject>(info.This());
+  //TypedObject* obj = ObjectWrap::Unwrap<TypedObject>(info.Holder());
+  TypedObject* obj = (TypedObject*) External::Unwrap(info.Holder());
   String::AsciiValue keyAscii(key);
-  const char *keyChar = *keyAscii;
-  size_t keyAsciiLen = keyAscii.length();
-  unsigned int hash = ::XXH32(keyChar, keyAsciiLen, obj->seed);
+  unsigned int hash = ::XXH32(*keyAscii, keyAscii.length(), obj->seed);
 }
 
 Handle<Integer> TypedObject::Has(Local<String> key, const AccessorInfo& info) {
@@ -135,7 +135,7 @@ void TypedObject::Init(Handle<Object> exports) {
 #endif
   constructor->InstanceTemplate()->SetInternalFieldCount(1);
   constructor->SetClassName(name);
-  constructor->PrototypeTemplate()->SetNamedPropertyHandler(Get, Set, Has, Del, For);
+  //constructor->PrototypeTemplate()->SetNamedPropertyHandler(Get, Set, Has, Del, For);
 
   exports->Set(name, constructor->GetFunction());
 }
