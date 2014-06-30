@@ -91,12 +91,12 @@ Handle<Value> TypedObject::New(const Arguments& args) {
   }
 
   uint32_t argsLen = args.Length();
-  if (argsLen < 1) {
+  if (argsLen != 1) {
     return ThrowException(Exception::Error(
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
-      String::New("TypedObject takes at least one argument.")
+      String::New("TypedObject takes exactly one argument.")
 #else
-      String::NewFromUtf8(isolate, "TypedObject takes at least one argument.")
+      String::NewFromUtf8(isolate, "TypedObject takes exactly one argument.")
 #endif
     ));
   }
@@ -115,15 +115,6 @@ Handle<Value> TypedObject::New(const Arguments& args) {
   obj->defaultValue = args[0];
   obj->defaultValueType = (args[0]->IsInt32() || args[0]->IsUint32())? Int: Double;
   obj->Wrap(args.This());
-
-  if (argsLen > 1 && args[1]->IsObject()) {
-    Local<Object> object = args[1]->ToObject();
-    Local<Array> keys = object->GetOwnPropertyNames();
-    for (uint32_t i = keys->Length(); i--;) {
-      Local<String> key = keys->Get(i)->ToString();
-      //obj->Set(key, object->Get(key));
-    }
-  }
 
   return args.This();
 }
