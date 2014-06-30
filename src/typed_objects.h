@@ -4,7 +4,7 @@
 #include <node.h>
 
 // http://stackoverflow.com/questions/7617587/is-there-an-alternative-to-using-time-to-seed-a-random-number-generation
-static unsigned int rdtsc() {
+unsigned int rdtsc() {
   unsigned int lo, hi;
   __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
   return hi ^ lo;
@@ -17,8 +17,8 @@ class TypedObject : public node::ObjectWrap {
   private:
     TypedObject();
     ~TypedObject();
-    static unsigned int seed;
-    static v8::Local<v8::Value> defaultValue;
+    unsigned int seed;
+    v8::Local<v8::Value> defaultValue;
     enum ValueTypes {
       Double,
       Int

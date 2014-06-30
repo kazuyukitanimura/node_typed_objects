@@ -8,25 +8,57 @@
 using namespace v8;
 
 Handle<Value> TypedObject::Get(Local<String> key, const AccessorInfo& info) {
-  return defaultValue;
+#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
+  HandleScope scope;
+#else
+  Isolate* isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+#endif
+  TypedObject* obj = ObjectWrap::Unwrap<TypedObject>(info.This());
+  return scope.Close(obj->defaultValue);
 }
 
 Handle<Value> TypedObject::Set(Local<String> key, Local<Value> value, const AccessorInfo& info) {
+#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
+  HandleScope scope;
+#else
+  Isolate* isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+#endif
+  TypedObject* obj = ObjectWrap::Unwrap<TypedObject>(info.This());
   String::AsciiValue keyAscii(key);
   const char *keyChar = *keyAscii;
   size_t keyAsciiLen = keyAscii.length();
-  unsigned int hash = ::XXH32(keyChar, keyAsciiLen, seed);
+  unsigned int hash = ::XXH32(keyChar, keyAsciiLen, obj->seed);
 }
 
 Handle<Integer> TypedObject::Has(Local<String> key, const AccessorInfo& info) {
+#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
+  HandleScope scope;
+#else
+  Isolate* isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+#endif
 
 }
 
 Handle<Boolean> TypedObject::Del(Local<String> key, const AccessorInfo& info) {
+#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
+  HandleScope scope;
+#else
+  Isolate* isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+#endif
 
 }
 
 Handle<Array> TypedObject::For(const AccessorInfo& info) {
+#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
+  HandleScope scope;
+#else
+  Isolate* isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
+#endif
 
 }
 
