@@ -75,7 +75,7 @@ Hashly.prototype.get = function(key) {
     if (ptr) {
       return ptr.find(hash, node.count);
     }
-    var mask = 0x80000000 >> bit;
+    var mask = 0x80000000 >>> bit;
     var right = !! (hash & mask);
     i = (i << 1) + 1 + right; // child node
   }
@@ -88,7 +88,7 @@ Hashly.prototype.set = function(key, val) {
     var arrayedTree = this.arrayedTree;
     var node = arrayedTree[i];
     var ptr = node.ptr;
-    var mask = 0x80000000 >> bit;
+    var mask = 0x80000000 >>> bit;
     if (ptr) {
       var count = node.count;
       var newItem = new Item(key, val, hash);
@@ -137,14 +137,14 @@ Hashly.prototype.del = function(key) {
       if (res && ! (--node.count)) { // if it becomes empty after deletion
         var left = i & 1; // left is always an odd number
         var sibling = arrayedTree[i + 1 - left * 2];
-        var parent = (i - 1) >> 1;
+        var parent = (i - 1) >>> 1;
         if (sibling.ptr) { // if sibling does not have children
           arrayedTree[parent] = sibling;
         }
       }
       return res;
     }
-    var mask = 0x80000000 >> bit;
+    var mask = 0x80000000 >>> bit;
     var right = !! (hash & mask);
     i = (i << 1) + 1 + right; // child node
   }
