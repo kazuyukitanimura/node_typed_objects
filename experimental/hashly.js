@@ -55,7 +55,7 @@ Bucket.prototype.remove = function(hash, count) {
 }
 
 var Node = function(defaultValue, oldPtr) {
-  this.count = 0;
+  this.count = 0; // maybe we can have another counter to fill items from both top and bottom of the bucket. In order to reduce the number of linear probing, check the next highest bit and decide whether we should put this item from the bottom or top 
   this.ptr = oldPtr || new Bucket(defaultValue);
 };
 
@@ -105,11 +105,11 @@ Hashly.prototype.set = function(key, val) {
         var rightChild = arrayedTree[(i << 1) + 2] = new Node(defaultValue);
         var rPtr = rightChild.ptr;
         var rCount = rightChild.count;
-        for (var j = 0; j < count; j++) {
+        for (var j = count; j--;) {
           var item = ptr[j];
           if (item.hash & mask) {
             rPtr.append(item, rCount++);
-            ptr[j--] = ptr[--count];
+            ptr[j] = ptr[--count];
           }
         }
         leftChild.count = count;
