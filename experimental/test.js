@@ -16,6 +16,12 @@ function test_get(size) {
   }
 }
 
+function test_del(size) {
+  for (var i = size; i--;) {
+    hash.del(i);
+  }
+}
+
 function test_n_set(size) {
   for (var i = size; i--;) {
     native[i] = i;
@@ -24,9 +30,17 @@ function test_n_set(size) {
 
 function test_n_get(size) {
   for (var i = size; i--;) {
-    native[i];
+    assert.deepEqual(native[i], i);
   }
 }
+
+function test_n_del(size) {
+  for (var i = size; i--;) {
+    delete native[i];
+  }
+}
+
+var start, end;
 
 start = Date.now();
 test_set(10000);
@@ -38,6 +52,11 @@ test_get(10000);
 end = Date.now();
 console.log('h get', end - start)
 
+//start = Date.now();
+//test_del(10000);
+//end = Date.now();
+//console.log('h del', end - start)
+
 start = Date.now();
 test_n_set(10000);
 end = Date.now();
@@ -47,3 +66,8 @@ start = Date.now();
 test_n_get(10000);
 end = Date.now();
 console.log('n get', end - start)
+
+start = Date.now();
+test_n_del(10000);
+end = Date.now();
+console.log('n del', end - start)

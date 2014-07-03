@@ -55,20 +55,34 @@ Bucket.prototype.remove = function(hash, count) {
 }
 
 var Node = function(defaultValue, oldPtr) {
-  this.count = 0; // maybe we can have another counter to fill items from both top and bottom of the bucket. In order to reduce the number of linear probing, check the next highest bit and decide whether we should put this item from the bottom or top 
+  this.count = 0; // maybe we can have another counter to fill items from both top and bottom of the bucket. In order to reduce the number of linear probing, check the next highest bit and decide whether we should put this item from the bottom or top
   this.ptr = oldPtr || new Bucket(defaultValue);
 };
 
 var Hashly = module.exports = function(defaultValue) {
   this.arrayedTree = [new Node(defaultValue)]; // http://en.wikipedia.org/wiki/Binary_tree
-  this.minHeight = 0; // TODO
+  this.minHeight = 0; // real min height - 1
   this.defaultValue = defaultValue;
+};
+
+Hashly.prototype._updateMinHeight = function(decrement) {
+  this.minHeight -= decrement;
+  var minHeight = this.minHeight;
+  var upper = (1 << (minHeight + 1)) - 1;
+  var lower = (1 << minHeight) - 1;
+  var arrayedTree = this.arrayedTree;
+  var res = true;
+  for (var i = lower; i < upper; i++) {
+    res &= !(arrayedTree[i].ptr)
+  }
+  this.minHeight += res;
 };
 
 Hashly.prototype.get = function(key) {
   var hash = hashF(key);
-  var i = 0;
-  for (var bit = 0; bit < BIT; bit++) {
+  var minHeight = this.minHeight;
+  var i = ((1 << minHeight) - 1) + (minHeight? (hash >>> (BIT - minHeight)) + 0: 0); // v8 bug
+  for (var bit = minHeight; bit < BIT; bit++) {
     var arrayedTree = this.arrayedTree;
     var node = arrayedTree[i];
     var ptr = node.ptr;
@@ -83,8 +97,9 @@ Hashly.prototype.get = function(key) {
 
 Hashly.prototype.set = function(key, val) {
   var hash = hashF(key);
-  var i = 0;
-  for (var bit = 0; bit < BIT; bit++) {
+  var minHeight = this.minHeight;
+  var i = ((1 << minHeight) - 1) + (minHeight? (hash >>> (BIT - minHeight)) + 0: 0); // v8 bug
+  for (var bit = minHeight; bit < BIT; bit++) {
     var arrayedTree = this.arrayedTree;
     var node = arrayedTree[i];
     var ptr = node.ptr;
@@ -93,9 +108,7 @@ Hashly.prototype.set = function(key, val) {
       var count = node.count;
       var newItem = new Item(key, val, hash);
       if (count < BUCKET_SIZE) {
-        if (ptr.append(newItem, count)) {
-          node.count++;
-        }
+        node.count += ptr.append(newItem, count); // increment if append returns true
         return true;
       } else { // it is full, so add a bucket
         node.count = 0;
@@ -114,6 +127,7 @@ Hashly.prototype.set = function(key, val) {
         }
         leftChild.count = count;
         rightChild.count = rCount;
+        this._updateMinHeight(false);
       }
     }
     var right = !! (hash & mask);
@@ -140,6 +154,7 @@ Hashly.prototype.del = function(key) {
         var parent = (i - 1) >>> 1;
         if (sibling.ptr) { // if sibling does not have children
           arrayedTree[parent] = sibling;
+          this._updateMinHeight(true);
         }
       }
       return res;
