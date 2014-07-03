@@ -72,7 +72,7 @@ Hashly.prototype._updateMinHeight = function(decrement) {
   var lower = (1 << minHeight) - 1;
   var arrayedTree = this.arrayedTree;
   var res = true;
-  for (var i = lower; i < upper; i++) {
+  for (var i = lower; i < upper && res; i++) {
     res &= !(arrayedTree[i].ptr)
   }
   this.minHeight += res;
