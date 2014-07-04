@@ -44,7 +44,7 @@ Bucket.prototype.find = function(hash, count) {
 };
 
 Bucket.prototype.remove = function(hash, count) {
-  for (var i = 0; i < count; i++) {
+  for (var i = count; i--;) {
     var item = this[i];
     if (item.hash === hash) { // or compare the key
       this[i] = this[count - 1];
@@ -88,7 +88,7 @@ Hashly.prototype._updateMinHeight = function(decrement) {
 Hashly.prototype.get = function(key) {
   var hash = hashF(key);
   var minHeight = this.minHeight;
-  var i = ((1 << minHeight) - 1) + (minHeight && (hash >>> (BIT - minHeight)));
+  var i = (1 << minHeight) - 1 + (minHeight && (hash >>> (BIT - minHeight)));
   for (var bit = minHeight; bit < BIT; bit++) {
     var arrayedTree = this.arrayedTree;
     var node = arrayedTree[i];
@@ -105,7 +105,7 @@ Hashly.prototype.get = function(key) {
 Hashly.prototype.set = function(key, val) {
   var hash = hashF(key);
   var minHeight = this.minHeight;
-  var i = ((1 << minHeight) - 1) + (minHeight && (hash >>> (BIT - minHeight)));
+  var i = (1 << minHeight) - 1 + (minHeight && (hash >>> (BIT - minHeight)));
   for (var bit = minHeight; bit < BIT; bit++) {
     var arrayedTree = this.arrayedTree;
     var node = arrayedTree[i];
@@ -113,9 +113,8 @@ Hashly.prototype.set = function(key, val) {
     var mask = 0x80000000 >>> bit;
     if (ptr) {
       var count = node.count;
-      var newItem = new Item(key, val, hash);
       if (count < BUCKET_SIZE) {
-        node.count += ptr.append(newItem, count); // increment if append returns true
+        node.count += ptr.append(new Item(key, val, hash), count); // increment if append returns true
         return true;
       } else { // it is full, so add a bucket
         node.count = 0;
@@ -150,7 +149,7 @@ Hashly.prototype.has = function(key) {
 Hashly.prototype.del = function(key) {
   var hash = hashF(key);
   var minHeight = this.minHeight;
-  var i = ((1 << minHeight) - 1) + (minHeight && (hash >>> (BIT - minHeight)));
+  var i = (1 << minHeight) - 1 + (minHeight && (hash >>> (BIT - minHeight)));
   for (var bit = minHeight; bit < BIT; bit++) {
     var arrayedTree = this.arrayedTree;
     var node = arrayedTree[i];
