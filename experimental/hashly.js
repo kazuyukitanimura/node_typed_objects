@@ -17,7 +17,7 @@ var Item = function(key, val, hash) {
 var Bucket = function(defaultValue) { // members are Item
   this.defaultValue = defaultValue;
   Array.call(this, BUCKET_SIZE);
-}
+};
 Bucket.prototype = Object.create(Array.prototype);
 
 Bucket.prototype.append = function(newItem, count) {
@@ -31,7 +31,7 @@ Bucket.prototype.append = function(newItem, count) {
   }
   this[count] = newItem;
   return true;
-}
+};
 
 Bucket.prototype.find = function(hash, count) {
   for (var i = 0; i < count; i++) {
@@ -41,7 +41,7 @@ Bucket.prototype.find = function(hash, count) {
     }
   }
   return this.defaultValue;
-}
+};
 
 Bucket.prototype.remove = function(hash, count) {
   for (var i = 0; i < count; i++) {
@@ -52,7 +52,7 @@ Bucket.prototype.remove = function(hash, count) {
     }
   }
   return false;
-}
+};
 
 var Node = function(defaultValue, oldPtr) {
   this.count = 0; // maybe we can have another counter to fill items from both top and bottom of the bucket. In order to reduce the number of linear probing, check the next highest bit and decide whether we should put this item from the bottom or top
@@ -73,7 +73,7 @@ Hashly.prototype._updateMinHeight = function(decrement) {
   var arrayedTree = this.arrayedTree;
   var res = true;
   for (var i = lower; i < upper && res; i++) {
-    res &= !(arrayedTree[i].ptr)
+    res &= !(arrayedTree[i].ptr);
   }
   this.minHeight += res;
 };
@@ -141,16 +141,17 @@ Hashly.prototype.has = function(key) {
 
 Hashly.prototype.del = function(key) {
   var hash = hashF(key);
-  var i = 0;
-  for (var bit = 0; bit < BIT; bit++) {
+  var minHeight = this.minHeight;
+  var i = ((1 << minHeight) - 1) + (minHeight && (hash >>> (BIT - minHeight)) + 0);
+  for (var bit = minHeight; bit < BIT; bit++) {
     var arrayedTree = this.arrayedTree;
     var node = arrayedTree[i];
     var ptr = node.ptr;
     if (ptr) {
       var res = ptr.remove(hash, node.count);
-      if (res && ! (--node.count)) { // if it becomes empty after deletion
+      if (res && ! (--node.count) && i) { // if it becomes empty after deletion
         var left = i & 1; // left is always an odd number
-        var sibling = arrayedTree[i + 1 - left * 2];
+        var sibling = arrayedTree[i - 1 + left * 2];
         var parent = (i - 1) >>> 1;
         if (sibling.ptr) { // if sibling does not have children
           arrayedTree[parent] = sibling;
