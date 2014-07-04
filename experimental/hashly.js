@@ -62,10 +62,17 @@ var Node = function(defaultValue, oldPtr) {
 var Hashly = module.exports = function(defaultValue) {
   this.arrayedTree = [new Node(defaultValue)]; // http://en.wikipedia.org/wiki/Binary_tree
   this.minHeight = 0; // real min height - 1
+  //this.minHeightRequest = 0;
   this.defaultValue = defaultValue;
 };
 
 Hashly.prototype._updateMinHeight = function(decrement) {
+  //if (!decrement) {
+  //  if ((1 << this.minHeight) > (++this.minHeightRequest)) {
+  //    return;
+  //  }
+  //  this.minHeightRequest = 0;
+  //}
   this.minHeight -= decrement;
   var minHeight = this.minHeight;
   var upper = (1 << (minHeight + 1)) - 1;
