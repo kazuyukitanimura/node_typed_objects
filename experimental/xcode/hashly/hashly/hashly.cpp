@@ -18,8 +18,11 @@ Item::~Item() {}
 
 Bucket::Bucket(double defaultValue) {
   this->defaultValue = defaultValue;
+  this->items = (Item*) malloc(BUCKET_SIZE * sizeof(Item));
 }
-Bucket::~Bucket() {}
+Bucket::~Bucket() {
+  free(this->items);
+}
 
 double Bucket::find(uint32_t hash, uint8_t count) {
   for (uint8_t i = count; i--;) {
@@ -62,11 +65,14 @@ Node::Node(double defaultValue, Bucket* oldBucket = NULL) {
 Node::~Node() {}
 
 Hashly::Hashly(double defaultValue) {
+  this->arrayedTree = (Node*) malloc(((1 << 10) - 1) * sizeof(Node));
   this->arrayedTree[0] = *(new Node(defaultValue));
   this->minHeight = 0;
   this->defaultValue = defaultValue;
 }
-Hashly::~Hashly() {}
+Hashly::~Hashly() {
+  free(this->arrayedTree);
+}
 
 double Hashly::operator[](std::string &key) {
   uint32_t hash = XXH32(key.c_str(), (int) key.length(), this->seed);

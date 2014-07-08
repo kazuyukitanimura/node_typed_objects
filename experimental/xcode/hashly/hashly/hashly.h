@@ -41,7 +41,7 @@ public:
   bool remove(uint32_t hash, uint8_t count);
 private:
   double defaultValue;
-  Item items[BUCKET_SIZE];
+  Item* items;
 };
 
 class Node {
@@ -58,7 +58,7 @@ public:
   ~Hashly();
   double operator[](std::string &key);
 private:
-  Node arrayedTree[(1 << 10) - 1];
+  Node* arrayedTree;
   uint8_t minHeight;
   double defaultValue;
   uint32_t seed = rdtsc();
