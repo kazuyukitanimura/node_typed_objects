@@ -20,12 +20,21 @@ unsigned int rdtsc() {
   return hi ^ lo;
 }
 
-const uint8_t BUCKET_SIZE = 32;
-const uint8_t BIT = 32;
+#define BUCKET_SIZE 32
+#define BIT 32
+#define ArrayMalloc(type, size) ((type *) malloc((size) * sizeof(type)))
+#define Hash uint32_t hash = XXH32(key.c_str(), (int) key.length(), seed)
+#define I uint32_t i = (1 << minHeight) - 1 + (hash >> (BIT - minHeight))
+#define NextI i = (i << 1) + 1 + ((hash >> bit) & 1)
+#define LocalNode Node node = arrayedTree[i]
+#define LocalBucket Bucket* bucket = node.bucket
+
 
 class Item {
-public:
-  Item(std::string key, double val, uint32_t hash);
+  friend class Hashly;
+  friend class Bucket;
+private:
+  Item(std::string &key, double val, uint32_t hash);
   ~Item();
   std::string key;
   double val;
@@ -33,19 +42,21 @@ public:
 };
 
 class Bucket {
-public:
+  friend class Hashly;
+  friend class Node;
+private:
   Bucket(double defaultValue);
   ~Bucket();
   double find(uint32_t hash, uint8_t count);
   bool insert(Item* newItem, uint8_t count);
   bool remove(uint32_t hash, uint8_t count);
-private:
-  double defaultValue;
+  double _defaultValue;
   Item* items;
 };
 
 class Node {
-public:
+  friend class Hashly;
+private:
   Node(double defaultValue, Bucket* oldBucket);
   ~Node();
   Bucket* bucket;
@@ -56,12 +67,16 @@ class Hashly {
 public:
   Hashly(double defaultValue);
   ~Hashly();
-  double operator[](std::string &key);
+  double get(std::string &key);
+  bool set(std::string &key, double val);
+  bool has(std::string &key);
+  bool del(std::string &key);
 private:
   Node* arrayedTree;
   uint8_t minHeight;
-  double defaultValue;
+  double _defaultValue;
   uint32_t seed = rdtsc();
+  inline void _updateMinHeight(bool decrement);
 };
 
 

@@ -9,49 +9,48 @@
 #include "hashly.h"
 #include "xxhash.h"
 
-Item::Item(std::string key, double val, uint32_t hash) {
+Item::Item(std::string &key, double val, uint32_t hash) {
   this->key = key;
   this->val = val;
   this->hash = hash;
 }
 Item::~Item() {}
 
-Bucket::Bucket(double defaultValue) {
-  this->defaultValue = defaultValue;
-  this->items = (Item*) malloc(BUCKET_SIZE * sizeof(Item));
+Bucket::Bucket(double defaultValue) : _defaultValue(defaultValue){
+  items = ArrayMalloc(Item, BUCKET_SIZE);
 }
 Bucket::~Bucket() {
-  free(this->items);
+  free(items);
 }
 
 double Bucket::find(uint32_t hash, uint8_t count) {
   for (uint8_t i = count; i--;) {
-    Item item = this->items[i];
+    Item item = items[i];
     if (item.hash == hash) { // or compare the key
       return item.val;
     }
   }
-  return this->defaultValue;
+  return _defaultValue;
 }
 
 bool Bucket::insert(Item* newItem, uint8_t count) {
   uint32_t newHash = newItem->hash;
   for (uint8_t i = count; i--;) {
-    Item item = this->items[i];
+    Item item = items[i];
     if (item.hash == newHash) { // or compare the key
-      this->items[i] = *newItem;
+      items[i] = *newItem;
       return false;
     }
   }
-  this->items[count] = *newItem;
+  items[count] = *newItem;
   return true;
 }
 
 bool Bucket::remove(uint32_t hash, uint8_t count) {
   for (uint8_t i = count; i--;) {
-    Item item = this->items[i];
+    Item item = items[i];
     if (item.hash == hash) { // or compare the key
-      this->items[i] = this->items[count - 1];
+      items[i] = items[count - 1];
       return true;
     }
   }
@@ -59,33 +58,107 @@ bool Bucket::remove(uint32_t hash, uint8_t count) {
 }
 
 Node::Node(double defaultValue, Bucket* oldBucket = NULL) {
-  this->count = 0;
-  this->bucket = (oldBucket == NULL) ? new Bucket(defaultValue): oldBucket;
+  count = 0;
+  bucket = (oldBucket == NULL) ? new Bucket(defaultValue): oldBucket;
 }
 Node::~Node() {}
 
-Hashly::Hashly(double defaultValue) {
-  this->arrayedTree = (Node*) malloc(((1 << 10) - 1) * sizeof(Node));
-  this->arrayedTree[0] = *(new Node(defaultValue));
-  this->minHeight = 0;
-  this->defaultValue = defaultValue;
+Hashly::Hashly(double defaultValue) : _defaultValue(defaultValue) {
+  arrayedTree =  ArrayMalloc(Node, ((1 << 10) - 1));
+  arrayedTree[0] = *(new Node(defaultValue));
+  minHeight = 0;
 }
 Hashly::~Hashly() {
-  free(this->arrayedTree);
+  free(arrayedTree);
 }
 
-double Hashly::operator[](std::string &key) {
-  uint32_t hash = XXH32(key.c_str(), (int) key.length(), this->seed);
-  uint8_t minHeight = this->minHeight;
-  uint8_t i = (1 << minHeight) - 1 + (hash >> (BIT - minHeight));
+void Hashly::_updateMinHeight(bool decrement) {
+  minHeight -= decrement;
+  uint32_t upper = (1 << (minHeight + 1)) - 1;
+  uint32_t lower = (1 << minHeight) - 1;
+  bool res = true;
+  for (uint32_t i = lower; i < upper && res; i++) {
+    res &= (arrayedTree[i].bucket == NULL);
+  }
+  minHeight += res;
+}
+
+double Hashly::get(std::string &key) {
+  Hash;
+  I;
   for (uint8_t bit = minHeight; bit < BIT; bit++) {
-    Node node = this->arrayedTree[i];
-    Bucket* bucket = node.bucket;
-    if (bucket) {
+    LocalNode;
+    LocalBucket;
+    if (bucket != NULL) {
        return bucket->find(hash, node.count);
     }
-    uint8_t right = (hash >> bit) & 1;
-    i = (i << 1) + 1 + right; // child node
+    NextI;
   }
-  return this->defaultValue;
+  return _defaultValue;
+}
+
+bool Hashly::set(std::string &key, double val) {
+  Hash;
+  I;
+  for (uint8_t bit = minHeight; bit < BIT; bit++) {
+    LocalNode;
+    LocalBucket;
+    if (bucket != NULL) {
+      uint8_t count = node.count;
+      if (count < BUCKET_SIZE) {
+        node.count += bucket->insert(new Item(key, val, hash), count); // increment if append returns true
+        return true;
+      } else { // it is full, so add a bucket
+        node.count = 0;
+        node.bucket = NULL;
+        uint32_t i_shift = i << 1;
+        Node leftChild = arrayedTree[i_shift | 1] = *new Node(_defaultValue, bucket);
+        Node rightChild = arrayedTree[i_shift + 2] = *new Node(_defaultValue);
+        Bucket* rBucket = rightChild.bucket;
+        uint8_t rCount = rightChild.count;
+        uint32_t mask = 0x80000000 >> bit;
+        for (uint8_t j = count; j--;) {
+          Item item = bucket->items[j];
+          if (item.hash & mask) {
+            rBucket->insert(&item, rCount++);
+            bucket[j] = bucket[--count];
+          }
+        }
+        leftChild.count = count;
+        rightChild.count = rCount;
+        _updateMinHeight(false);
+      }
+    }
+    NextI;
+  }
+  return false; // you never reach here, fake IDE
+}
+
+bool Hashly::has(std::string &key) {
+  return get(key) != _defaultValue;
+};
+
+bool Hashly::del(std::string &key) {
+  Hash;
+  I;
+  for (uint8_t bit = minHeight; bit < BIT; bit++) {
+    LocalNode;
+    LocalBucket;
+    if (bucket != NULL) {
+      bool res = bucket->remove(hash, node.count);
+      if (res && ! (--node.count) && i) { // if it becomes empty after deletion
+        uint32_t left = i & 1; // left is always an odd number
+        uint32_t i_1 = i - 1;
+        Node sibling = arrayedTree[i_1 + left * 2];
+        uint32_t parent = i_1 >> 1;
+        if (sibling.bucket != NULL) { // if sibling does not have children
+          arrayedTree[parent] = sibling;
+          _updateMinHeight(true);
+        }
+      }
+      return res;
+    }
+    NextI;
+  }
+  return false; // you never reach here, fake IDE
 }
