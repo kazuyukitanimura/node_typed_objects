@@ -49,6 +49,7 @@ private:
   ~Bucket();
   double find(uint32_t hash, uint8_t count);
   bool insert(Item* newItem, uint8_t count);
+  bool insert(std::string &key, double val, uint32_t hash, uint8_t count);
   bool remove(uint32_t hash, uint8_t count);
   double _defaultValue;
   Item* items;

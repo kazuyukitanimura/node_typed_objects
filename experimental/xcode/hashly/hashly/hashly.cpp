@@ -9,6 +9,7 @@
 #include "hashly.h"
 #include "xxhash.h"
 
+//TODO change to struct
 Item::Item(std::string &key, double val, uint32_t hash) {
   this->key = key;
   this->val = val;
@@ -34,15 +35,25 @@ double Bucket::find(uint32_t hash, uint8_t count) {
 }
 
 bool Bucket::insert(Item* newItem, uint8_t count) {
-  uint32_t newHash = newItem->hash;
+  Item item = items[count];
+  item.key = newItem->key; // copy only pointer
+  item.val = newItem->val;
+  item.hash = newItem->hash;
+  return true;
+}
+
+bool Bucket::insert(std::string &key, double val, uint32_t hash, uint8_t count) {
   for (uint8_t i = count; i--;) {
     Item item = items[i];
-    if (item.hash == newHash) { // or compare the key
-      items[i] = *newItem;
+    if (item.hash == hash) { // or compare the key
+      items[i].val = val;
       return false;
     }
   }
-  items[count] = *newItem;
+  Item item = items[count];
+  item.key = key;
+  item.val = val;
+  item.hash = hash;
   return true;
 }
 
@@ -61,10 +72,12 @@ Node::Node(double defaultValue, Bucket* oldBucket = NULL) {
   count = 0;
   bucket = (oldBucket == NULL) ? new Bucket(defaultValue): oldBucket;
 }
-Node::~Node() {}
+Node::~Node() {
+  bucket->~Bucket();
+}
 
 Hashly::Hashly(double defaultValue) : _defaultValue(defaultValue) {
-  arrayedTree =  ArrayMalloc(Node, ((1 << 10) - 1));
+  arrayedTree =  ArrayMalloc(Node, (1 << 10) - 1);
   arrayedTree[0] = *(new Node(defaultValue));
   minHeight = 0;
 }
@@ -106,7 +119,7 @@ bool Hashly::set(std::string &key, double val) {
     if (bucket != NULL) {
       uint8_t count = node.count;
       if (count < BUCKET_SIZE) {
-        node.count += bucket->insert(new Item(key, val, hash), count); // increment if append returns true
+        node.count += bucket->insert(key, val, hash, count); // increment if append returns true
         return true;
       } else { // it is full, so add a bucket
         node.count = 0;

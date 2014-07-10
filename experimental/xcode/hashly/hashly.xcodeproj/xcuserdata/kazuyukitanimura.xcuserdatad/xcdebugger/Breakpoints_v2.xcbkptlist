@@ -86,22 +86,6 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "hashly/hashly.cpp"
-            timestampString = "426483464.351032"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "30"
-            endingLineNumber = "30"
-            landmarkName = "Hashly::Hashly(double defaultValue)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "hashly/hashly.cpp"
             timestampString = "426579268.511966"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
