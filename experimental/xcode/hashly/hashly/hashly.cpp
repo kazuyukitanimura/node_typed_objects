@@ -14,7 +14,7 @@ Bucket::Bucket(double defaultValue) : _defaultValue(defaultValue) {
   count = 0;
 }
 Bucket::~Bucket() {
-  delete items;
+  delete[] items;
 }
 
 double Bucket::find(uint32_t hash) {
@@ -68,20 +68,33 @@ bool Bucket::remove(uint32_t hash) {
   return false;
 }
 
-Node::Node(double defaultValue, Bucket* oldBucket = NULL) {
-  bucket = (oldBucket == NULL) ? new Bucket(defaultValue): oldBucket;
-}
-Node::~Node() {
-  delete bucket;
-}
-
 Hashly::Hashly(double defaultValue) : _defaultValue(defaultValue) {
-  arrayedTree =  ArrayMalloc(Node, (1 << 10) - 1);
-  arrayedTree[0] = *(new Node(defaultValue));
+  /**
+   * Do not use the new operator here (i.e., new Bucket*[size])
+   * since we do not want to call the defaul constructor of Bucket.
+   * Maybe we just should use std::vector here, but we want to make sure
+   * that we can exploit the cache locality by allocating raw memory
+   */
+  arrayedTree =  ArrayMalloc(Bucket*, (1 << 10) - 1); // TODO realloc
+  arrayedTree[0] = new Bucket(defaultValue);
   minHeight = 0;
 }
 Hashly::~Hashly() {
+  _free(minHeight);
   free(arrayedTree);
+}
+
+void Hashly::_free(uint32_t height) {
+  uint32_t upper = (1 << (height + 1)) - 1;
+  uint32_t lower = (1 << height) - 1;
+  for (uint32_t i = lower; i < upper; i++) {
+    if (arrayedTree[i] == NULL) {
+      _free(height + 1);
+    } else {
+      delete arrayedTree[i];
+      //arrayedTree[i]->Bucket::~Bucket();
+    }
+  }
 }
 
 void Hashly::_updateMinHeight(bool decrement) {
@@ -90,7 +103,7 @@ void Hashly::_updateMinHeight(bool decrement) {
   uint32_t lower = (1 << minHeight) - 1;
   bool res = true;
   for (uint32_t i = lower; i < upper && res; i++) {
-    res &= (arrayedTree[i].bucket == NULL);
+    res &= (arrayedTree[i] == NULL);
   }
   minHeight += res;
 }
@@ -99,7 +112,6 @@ double Hashly::get(std::string &key) {
   Hash;
   I;
   HashlyFor {
-    LocalNode;
     LocalBucket;
     IfBucket {
        return bucket->find(hash);
@@ -113,7 +125,6 @@ bool Hashly::set(std::string &key, double val) {
   Hash;
   I;
   HashlyFor {
-    LocalNode;
     LocalBucket;
     IfBucket {
       uint8_t count = bucket->count;
@@ -121,21 +132,19 @@ bool Hashly::set(std::string &key, double val) {
         bucket->insert(key, val, hash);
         return true;
       } else { // it is full, so add a bucket
-        bucket->count = 0;
-        node.bucket = NULL;
+        arrayedTree[i] = NULL;
         uint32_t i_shift = i << 1;
-        Node leftChild = arrayedTree[i_shift | 1] = *new Node(_defaultValue, bucket);
-        Node rightChild = arrayedTree[i_shift + 2] = *new Node(_defaultValue);
-        Bucket* rBucket = rightChild.bucket;
+        Bucket* leftChild = arrayedTree[i_shift | 1] = bucket;
+        Bucket* rightChild = arrayedTree[i_shift + 2] = new Bucket(_defaultValue);
         uint32_t mask = 0x80000000 >> bit;
         for (uint8_t j = count; j--;) {
           Item item = bucket->items[j];
           if (item.hash & mask) {
-            rBucket->insert(&item);
+            rightChild->insert(&item);
             bucket[j] = bucket[--count];
           }
         }
-        leftChild.bucket->count = count;
+        leftChild->count = count;
         _updateMinHeight(false);
       }
     }
@@ -152,16 +161,15 @@ bool Hashly::del(std::string &key) {
   Hash;
   I;
   HashlyFor {
-    LocalNode;
     LocalBucket;
     IfBucket {
       bool res = bucket->remove(hash);
       if (res && ! (bucket->count) && i) { // if it becomes empty after deletion
         uint32_t left = i & 1; // left is always an odd number
         uint32_t i_1 = i - 1;
-        Node sibling = arrayedTree[i_1 + left * 2];
+        Bucket* sibling = arrayedTree[i_1 + left * 2];
         uint32_t parent = i_1 >> 1;
-        if (sibling.bucket != NULL) { // if sibling does not have children
+        if (sibling != NULL) { // if sibling does not have children
           arrayedTree[parent] = sibling;
           delete bucket;
           _updateMinHeight(true);

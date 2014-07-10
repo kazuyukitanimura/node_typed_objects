@@ -27,8 +27,7 @@ unsigned int rdtsc() {
 #define I uint32_t i = (1 << minHeight) - 1 + (hash >> (BIT - minHeight))
 #define HashlyFor for (uint8_t bit = minHeight; bit < BIT; bit++)
 #define NextI i = (i << 1) + 1 + ((hash >> bit) & 1)
-#define LocalNode Node node = arrayedTree[i]
-#define LocalBucket Bucket* bucket = node.bucket
+#define LocalBucket Bucket* bucket = arrayedTree[i]
 #define IfBucket if (bucket != NULL)
 
 
@@ -53,14 +52,6 @@ private:
   uint8_t count;
 };
 
-class Node {
-  friend class Hashly;
-private:
-  Node(double defaultValue, Bucket* oldBucket);
-  ~Node();
-  Bucket* bucket;
-};
-
 class Hashly {
 public:
   Hashly(double defaultValue);
@@ -70,11 +61,12 @@ public:
   bool has(std::string &key);
   bool del(std::string &key);
 private:
-  Node* arrayedTree;
+  Bucket** arrayedTree;
   uint8_t minHeight;
   double _defaultValue;
   uint32_t seed = rdtsc();
   inline void _updateMinHeight(bool decrement);
+  void _free(uint32_t height);
 };
 
 
