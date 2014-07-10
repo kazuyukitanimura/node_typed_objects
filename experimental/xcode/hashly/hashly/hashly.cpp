@@ -28,10 +28,7 @@ double Bucket::find(uint32_t hash) {
 }
 
 bool Bucket::insert(Item* newItem) {
-  Item item = items[count];
-  item.key = newItem->key; // TODO copy the pointer to string key only
-  item.val = newItem->val;
-  item.hash = newItem->hash;
+  items[count] = *newItem; // Is this ok?
   count++;
   return true;
 }
@@ -70,8 +67,8 @@ bool Bucket::remove(uint32_t hash) {
 
 Hashly::Hashly(double defaultValue) : _defaultValue(defaultValue) {
   /**
-   * Do not use the new operator here (i.e., new Bucket*[size])
-   * since we do not want to call the defaul constructor of Bucket.
+   * Do not use the new operator for arrayedTree (i.e., new Bucket*[size])
+   * since we do not want to call the default constructor of Bucket.
    * Maybe we just should use std::vector here, but we want to make sure
    * that we can exploit the cache locality by allocating raw memory
    */
@@ -84,6 +81,9 @@ Hashly::~Hashly() {
   free(arrayedTree);
 }
 
+/**
+ * Recursively free the buckets in arrayedTree
+ */
 void Hashly::_free(uint32_t height) {
   uint32_t upper = (1 << (height + 1)) - 1;
   uint32_t lower = (1 << height) - 1;
@@ -167,7 +167,7 @@ bool Hashly::del(std::string &key) {
       if (res && ! (bucket->count) && i) { // if it becomes empty after deletion
         uint32_t left = i & 1; // left is always an odd number
         uint32_t i_1 = i - 1;
-        Bucket* sibling = arrayedTree[i_1 + left * 2];
+        Bucket* sibling = arrayedTree[i_1 + (left << 1)];
         uint32_t parent = i_1 >> 1;
         if (sibling != NULL) { // if sibling does not have children
           arrayedTree[parent] = sibling;
