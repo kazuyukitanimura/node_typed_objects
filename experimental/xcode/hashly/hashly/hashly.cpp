@@ -9,19 +9,11 @@
 #include "hashly.h"
 #include "xxhash.h"
 
-//TODO change to struct
-Item::Item(std::string &key, double val, uint32_t hash) {
-  this->key = key;
-  this->val = val;
-  this->hash = hash;
-}
-Item::~Item() {}
-
 Bucket::Bucket(double defaultValue) : _defaultValue(defaultValue){
-  items = ArrayMalloc(Item, BUCKET_SIZE);
+  items = new Item[BUCKET_SIZE];
 }
 Bucket::~Bucket() {
-  free(items);
+  delete items;
 }
 
 double Bucket::find(uint32_t hash, uint8_t count) {
@@ -36,7 +28,7 @@ double Bucket::find(uint32_t hash, uint8_t count) {
 
 bool Bucket::insert(Item* newItem, uint8_t count) {
   Item item = items[count];
-  item.key = newItem->key; // copy only pointer
+  item.key = newItem->key; // TODO copy the pointer to string key only
   item.val = newItem->val;
   item.hash = newItem->hash;
   return true;
@@ -51,6 +43,10 @@ bool Bucket::insert(std::string &key, double val, uint32_t hash, uint8_t count) 
     }
   }
   Item item = items[count];
+  /**
+   * We do not want to do this in a copy constructor in order to avoid allocating
+   * memory for right hand side value (i.e., key, val, hash)
+   */
   item.key = key;
   item.val = val;
   item.hash = hash;
@@ -73,7 +69,7 @@ Node::Node(double defaultValue, Bucket* oldBucket = NULL) {
   bucket = (oldBucket == NULL) ? new Bucket(defaultValue): oldBucket;
 }
 Node::~Node() {
-  bucket->~Bucket();
+  delete bucket;
 }
 
 Hashly::Hashly(double defaultValue) : _defaultValue(defaultValue) {

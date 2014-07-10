@@ -30,12 +30,7 @@ unsigned int rdtsc() {
 #define LocalBucket Bucket* bucket = node.bucket
 
 
-class Item {
-  friend class Hashly;
-  friend class Bucket;
-private:
-  Item(std::string &key, double val, uint32_t hash);
-  ~Item();
+struct Item {
   std::string key;
   double val;
   uint32_t hash;
