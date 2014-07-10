@@ -44,12 +44,13 @@ class Bucket {
 private:
   Bucket(double defaultValue);
   ~Bucket();
-  double find(uint32_t hash, uint8_t count);
-  bool insert(Item* newItem, uint8_t count);
-  bool insert(std::string &key, double val, uint32_t hash, uint8_t count);
-  bool remove(uint32_t hash, uint8_t count);
+  double find(uint32_t hash);
+  bool insert(Item* newItem);
+  bool insert(std::string &key, double val, uint32_t hash);
+  bool remove(uint32_t hash);
   double _defaultValue;
   Item* items;
+  uint8_t count;
 };
 
 class Node {
@@ -58,7 +59,6 @@ private:
   Node(double defaultValue, Bucket* oldBucket);
   ~Node();
   Bucket* bucket;
-  uint8_t count;
 };
 
 class Hashly {

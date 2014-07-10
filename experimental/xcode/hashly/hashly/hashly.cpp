@@ -9,14 +9,15 @@
 #include "hashly.h"
 #include "xxhash.h"
 
-Bucket::Bucket(double defaultValue) : _defaultValue(defaultValue){
+Bucket::Bucket(double defaultValue) : _defaultValue(defaultValue) {
   items = new Item[BUCKET_SIZE];
+  count = 0;
 }
 Bucket::~Bucket() {
   delete items;
 }
 
-double Bucket::find(uint32_t hash, uint8_t count) {
+double Bucket::find(uint32_t hash) {
   for (uint8_t i = count; i--;) {
     Item item = items[i];
     if (item.hash == hash) { // or compare the key
@@ -26,15 +27,16 @@ double Bucket::find(uint32_t hash, uint8_t count) {
   return _defaultValue;
 }
 
-bool Bucket::insert(Item* newItem, uint8_t count) {
+bool Bucket::insert(Item* newItem) {
   Item item = items[count];
   item.key = newItem->key; // TODO copy the pointer to string key only
   item.val = newItem->val;
   item.hash = newItem->hash;
+  count++;
   return true;
 }
 
-bool Bucket::insert(std::string &key, double val, uint32_t hash, uint8_t count) {
+bool Bucket::insert(std::string &key, double val, uint32_t hash) {
   for (uint8_t i = count; i--;) {
     Item item = items[i];
     if (item.hash == hash) { // or compare the key
@@ -50,14 +52,16 @@ bool Bucket::insert(std::string &key, double val, uint32_t hash, uint8_t count) 
   item.key = key;
   item.val = val;
   item.hash = hash;
+  count++;
   return true;
 }
 
-bool Bucket::remove(uint32_t hash, uint8_t count) {
+bool Bucket::remove(uint32_t hash) {
   for (uint8_t i = count; i--;) {
     Item item = items[i];
     if (item.hash == hash) { // or compare the key
       items[i] = items[count - 1];
+      count--;
       return true;
     }
   }
@@ -65,7 +69,6 @@ bool Bucket::remove(uint32_t hash, uint8_t count) {
 }
 
 Node::Node(double defaultValue, Bucket* oldBucket = NULL) {
-  count = 0;
   bucket = (oldBucket == NULL) ? new Bucket(defaultValue): oldBucket;
 }
 Node::~Node() {
@@ -99,7 +102,7 @@ double Hashly::get(std::string &key) {
     LocalNode;
     LocalBucket;
     IfBucket {
-       return bucket->find(hash, node.count);
+       return bucket->find(hash);
     }
     NextI;
   }
@@ -113,28 +116,26 @@ bool Hashly::set(std::string &key, double val) {
     LocalNode;
     LocalBucket;
     IfBucket {
-      uint8_t count = node.count;
+      uint8_t count = bucket->count;
       if (count < BUCKET_SIZE) {
-        node.count += bucket->insert(key, val, hash, count); // increment if append returns true
+        bucket->insert(key, val, hash);
         return true;
       } else { // it is full, so add a bucket
-        node.count = 0;
+        bucket->count = 0;
         node.bucket = NULL;
         uint32_t i_shift = i << 1;
         Node leftChild = arrayedTree[i_shift | 1] = *new Node(_defaultValue, bucket);
         Node rightChild = arrayedTree[i_shift + 2] = *new Node(_defaultValue);
         Bucket* rBucket = rightChild.bucket;
-        uint8_t rCount = rightChild.count;
         uint32_t mask = 0x80000000 >> bit;
         for (uint8_t j = count; j--;) {
           Item item = bucket->items[j];
           if (item.hash & mask) {
-            rBucket->insert(&item, rCount++);
+            rBucket->insert(&item);
             bucket[j] = bucket[--count];
           }
         }
-        leftChild.count = count;
-        rightChild.count = rCount;
+        leftChild.bucket->count = count;
         _updateMinHeight(false);
       }
     }
@@ -154,14 +155,15 @@ bool Hashly::del(std::string &key) {
     LocalNode;
     LocalBucket;
     IfBucket {
-      bool res = bucket->remove(hash, node.count);
-      if (res && ! (--node.count) && i) { // if it becomes empty after deletion
+      bool res = bucket->remove(hash);
+      if (res && ! (bucket->count) && i) { // if it becomes empty after deletion
         uint32_t left = i & 1; // left is always an odd number
         uint32_t i_1 = i - 1;
         Node sibling = arrayedTree[i_1 + left * 2];
         uint32_t parent = i_1 >> 1;
         if (sibling.bucket != NULL) { // if sibling does not have children
           arrayedTree[parent] = sibling;
+          delete bucket;
           _updateMinHeight(true);
         }
       }
