@@ -25,6 +25,7 @@ unsigned int rdtsc() {
 #define ArrayMalloc(type, size) ((type *) malloc((size) * sizeof(type)))
 #define Hash uint32_t hash = XXH32(key.c_str(), (int) key.length(), seed)
 #define I uint32_t i = (1 << minHeight) - 1 + (hash >> (BIT - minHeight))
+#define HashlyFor for (uint8_t bit = minHeight; bit < BIT; bit++)
 #define NextI i = (i << 1) + 1 + ((hash >> bit) & 1)
 #define LocalNode Node node = arrayedTree[i]
 #define LocalBucket Bucket* bucket = node.bucket

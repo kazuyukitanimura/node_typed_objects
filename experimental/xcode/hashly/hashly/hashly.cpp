@@ -95,7 +95,7 @@ void Hashly::_updateMinHeight(bool decrement) {
 double Hashly::get(std::string &key) {
   Hash;
   I;
-  for (uint8_t bit = minHeight; bit < BIT; bit++) {
+  HashlyFor {
     LocalNode;
     LocalBucket;
     if (bucket != NULL) {
@@ -109,7 +109,7 @@ double Hashly::get(std::string &key) {
 bool Hashly::set(std::string &key, double val) {
   Hash;
   I;
-  for (uint8_t bit = minHeight; bit < BIT; bit++) {
+  HashlyFor {
     LocalNode;
     LocalBucket;
     if (bucket != NULL) {
@@ -150,7 +150,7 @@ bool Hashly::has(std::string &key) {
 bool Hashly::del(std::string &key) {
   Hash;
   I;
-  for (uint8_t bit = minHeight; bit < BIT; bit++) {
+  HashlyFor {
     LocalNode;
     LocalBucket;
     if (bucket != NULL) {
