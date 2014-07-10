@@ -44,8 +44,8 @@ bool Bucket::insert(std::string &key, double val, uint32_t hash, uint8_t count) 
   }
   Item item = items[count];
   /**
-   * We do not want to do this in a copy constructor in order to avoid allocating
-   * memory for right hand side value (i.e., key, val, hash)
+   * We do not do this in a copy constructor in order to avoid allocating
+   * extra memory for the right hand side values (i.e., key, val, hash)
    */
   item.key = key;
   item.val = val;
@@ -98,7 +98,7 @@ double Hashly::get(std::string &key) {
   HashlyFor {
     LocalNode;
     LocalBucket;
-    if (bucket != NULL) {
+    IfBucket {
        return bucket->find(hash, node.count);
     }
     NextI;
@@ -112,7 +112,7 @@ bool Hashly::set(std::string &key, double val) {
   HashlyFor {
     LocalNode;
     LocalBucket;
-    if (bucket != NULL) {
+    IfBucket {
       uint8_t count = node.count;
       if (count < BUCKET_SIZE) {
         node.count += bucket->insert(key, val, hash, count); // increment if append returns true
@@ -153,7 +153,7 @@ bool Hashly::del(std::string &key) {
   HashlyFor {
     LocalNode;
     LocalBucket;
-    if (bucket != NULL) {
+    IfBucket {
       bool res = bucket->remove(hash, node.count);
       if (res && ! (--node.count) && i) { // if it becomes empty after deletion
         uint32_t left = i & 1; // left is always an odd number

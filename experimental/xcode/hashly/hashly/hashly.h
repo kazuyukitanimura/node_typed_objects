@@ -29,6 +29,7 @@ unsigned int rdtsc() {
 #define NextI i = (i << 1) + 1 + ((hash >> bit) & 1)
 #define LocalNode Node node = arrayedTree[i]
 #define LocalBucket Bucket* bucket = node.bucket
+#define IfBucket if (bucket != NULL)
 
 
 struct Item {
