@@ -14,7 +14,7 @@
 #include <string>
 
 // http://stackoverflow.com/questions/7617587/is-there-an-alternative-to-using-time-to-seed-a-random-number-generation
-unsigned int rdtsc() {
+inline unsigned int rdtsc() {
   unsigned int lo, hi;
   __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
   return hi ^ lo;
@@ -24,7 +24,7 @@ unsigned int rdtsc() {
 #define BIT 32
 #define ArrayMalloc(type, size) ((type *) malloc((size) * sizeof(type)))
 #define Hash uint32_t hash = XXH32(key.c_str(), (int) key.length(), seed)
-#define I uint32_t i = (1 << minHeight) - 1 + (hash >> (BIT - minHeight))
+#define I uint32_t i = (1 << minHeight) - 1 + (minHeight && (hash >> (BIT - minHeight)))
 #define HashlyFor for (uint8_t bit = minHeight; bit < BIT; bit++)
 #define NextI i = (i << 1) + 1 + ((hash >> bit) & 1)
 #define LocalBucket Bucket* bucket = arrayedTree[i]
@@ -39,13 +39,12 @@ struct Item {
 
 class Bucket {
   friend class Hashly;
-  friend class Node;
 private:
   Bucket(double defaultValue);
   ~Bucket();
   double find(uint32_t hash);
   bool insert(Item* newItem);
-  bool insert(std::string &key, double val, uint32_t hash);
+  bool insert(const std::string &key, double val, uint32_t hash);
   bool remove(uint32_t hash);
   double _defaultValue;
   Item* items;
@@ -56,10 +55,10 @@ class Hashly {
 public:
   Hashly(double defaultValue);
   ~Hashly();
-  double get(std::string &key);
-  bool set(std::string &key, double val);
-  bool has(std::string &key);
-  bool del(std::string &key);
+  double get(const std::string &key);
+  bool set(const std::string &key, double val);
+  bool has(const std::string &key);
+  bool del(const std::string &key);
 private:
   Bucket** arrayedTree;
   uint8_t minHeight;

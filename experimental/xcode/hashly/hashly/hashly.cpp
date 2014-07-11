@@ -19,9 +19,8 @@ Bucket::~Bucket() {
 
 double Bucket::find(uint32_t hash) {
   for (uint8_t i = count; i--;) {
-    Item item = items[i];
-    if (item.hash == hash) { // or compare the key
-      return item.val;
+    if (items[i].hash == hash) { // or compare the key
+      return items[i].val;
     }
   }
   return _defaultValue;
@@ -33,30 +32,27 @@ bool Bucket::insert(Item* newItem) {
   return true;
 }
 
-bool Bucket::insert(std::string &key, double val, uint32_t hash) {
+bool Bucket::insert(const std::string &key, double val, uint32_t hash) {
   for (uint8_t i = count; i--;) {
-    Item item = items[i];
-    if (item.hash == hash) { // or compare the key
+    if (items[i].hash == hash) { // or compare the key
       items[i].val = val;
       return false;
     }
   }
-  Item item = items[count];
   /**
    * We do not do this in a copy constructor in order to avoid allocating
    * extra memory for the right hand side values (i.e., key, val, hash)
    */
-  item.key = key;
-  item.val = val;
-  item.hash = hash;
+  items[count].key = key;
+  items[count].val = val;
+  items[count].hash = hash;
   count++;
   return true;
 }
 
 bool Bucket::remove(uint32_t hash) {
   for (uint8_t i = count; i--;) {
-    Item item = items[i];
-    if (item.hash == hash) { // or compare the key
+    if (items[i].hash == hash) { // or compare the key
       items[i] = items[count - 1];
       count--;
       return true;
@@ -108,7 +104,7 @@ void Hashly::_updateMinHeight(bool decrement) {
   minHeight += res;
 }
 
-double Hashly::get(std::string &key) {
+double Hashly::get(const std::string &key) {
   Hash;
   I;
   HashlyFor {
@@ -121,7 +117,7 @@ double Hashly::get(std::string &key) {
   return _defaultValue;
 }
 
-bool Hashly::set(std::string &key, double val) {
+bool Hashly::set(const std::string &key, double val) {
   Hash;
   I;
   HashlyFor {
@@ -153,11 +149,11 @@ bool Hashly::set(std::string &key, double val) {
   return false; // you never reach here, fake IDE
 }
 
-bool Hashly::has(std::string &key) {
+bool Hashly::has(const std::string &key) {
   return get(key) != _defaultValue;
 };
 
-bool Hashly::del(std::string &key) {
+bool Hashly::del(const std::string &key) {
   Hash;
   I;
   HashlyFor {

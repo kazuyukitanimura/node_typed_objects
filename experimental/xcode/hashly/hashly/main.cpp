@@ -8,12 +8,39 @@
 
 #include <iostream>
 #include "hashly.h"
+#include <ctime>
 
-int main(int argc, const char * argv[])
-{
+#define START begin = std::clock()
+#define END(name) std::cout << "(name): " << double(std::clock() - begin) / CLOCKS_PER_SEC << " seconds\n"
 
-    // insert code here...
-    std::cout << "Hello, World!\n";
-    return 0;
+
+int main(int argc, const char * argv[]) {
+  // dumb unit test...
+  std::cout << "Hello, World!\n";
+  Hashly* h = new Hashly(0.0);
+  uint32_t size = 10000;
+  clock_t begin;
+
+  START;
+  for (uint32_t i = size; i--;) {
+    h->set(std::to_string(i), (double)i);
+  }
+  END("set");
+
+  bool res = true;
+  START;
+  for (uint32_t i = size; i--;) {
+    res &= (h->get(std::to_string(i)) == (double)i);
+  }
+  END("get");
+  std::cout << "res: " << res << "\n";
+
+  START;
+  for (uint32_t i = size; i--;) {
+    h->del(std::to_string(i));
+  }
+  END("del");
+
+  return 0;
 }
 
