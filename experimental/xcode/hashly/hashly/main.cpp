@@ -11,7 +11,7 @@
 #include <ctime>
 
 #define START begin = std::clock()
-#define END(name) std::cout << "(name): " << double(std::clock() - begin) / CLOCKS_PER_SEC << " seconds\n"
+#define END(name) duration = double(std::clock() - begin) / CLOCKS_PER_SEC; std::cout << (name) << ": " << duration << " seconds\n"
 
 
 int main(int argc, const char * argv[]) {
@@ -20,6 +20,7 @@ int main(int argc, const char * argv[]) {
   Hashly* h = new Hashly(0.0);
   uint32_t size = 10000;
   clock_t begin;
+  double duration;
 
   START;
   for (uint32_t i = size; i--;) {

@@ -27,7 +27,9 @@ double Bucket::find(uint32_t hash) {
 }
 
 bool Bucket::insert(Item* newItem) {
-  items[count] = *newItem; // Is this ok?
+  items[count].key = newItem->key;
+  items[count].val = newItem->val;
+  items[count].hash = newItem->hash;
   count++;
   return true;
 }
@@ -68,7 +70,7 @@ Hashly::Hashly(double defaultValue) : _defaultValue(defaultValue) {
    * Maybe we just should use std::vector here, but we want to make sure
    * that we can exploit the cache locality by allocating raw memory
    */
-  arrayedTree =  ArrayMalloc(Bucket*, (1 << 10) - 1); // TODO realloc
+  arrayedTree =  ArrayMalloc(Bucket*, (1 << 12) - 1); // TODO realloc
   arrayedTree[0] = new Bucket(defaultValue);
   minHeight = 0;
 }
@@ -99,7 +101,7 @@ void Hashly::_updateMinHeight(bool decrement) {
   uint32_t lower = (1 << minHeight) - 1;
   bool res = true;
   for (uint32_t i = lower; i < upper && res; i++) {
-    res &= (arrayedTree[i] == NULL);
+    res = (arrayedTree[i] == NULL);
   }
   minHeight += res;
 }
@@ -137,7 +139,7 @@ bool Hashly::set(const std::string &key, double val) {
           Item item = bucket->items[j];
           if (item.hash & mask) {
             rightChild->insert(&item);
-            bucket[j] = bucket[--count];
+            bucket->items[j] = bucket->items[--count];
           }
         }
         leftChild->count = count;
