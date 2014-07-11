@@ -11,7 +11,7 @@
 #include <ctime>
 
 #define START begin = std::clock()
-#define END(name) duration = double(std::clock() - begin) / CLOCKS_PER_SEC; std::cout << (name) << ": " << duration << " seconds\n"
+#define END(name) duration = 1000 * double(std::clock() - begin) / CLOCKS_PER_SEC; std::cout << (name) << ": " << duration << " mili seconds\n"
 
 
 int main(int argc, const char * argv[]) {
@@ -28,14 +28,15 @@ int main(int argc, const char * argv[]) {
   }
   END("set");
 
-  bool res = true;
   START;
   for (uint32_t i = size; i--;) {
-    res &= (h->get(std::to_string(i)) == (double)i);
+    if (h->get(std::to_string(i)) != (double)i) {
+      std::cout << "actual: " << h->get(std::to_string(i)) << ", expected: " << (double)i << "\n";
+    }
   }
   END("get");
-  std::cout << "res: " << res << "\n";
 
+  delete h;
   START;
   for (uint32_t i = size; i--;) {
     h->del(std::to_string(i));
