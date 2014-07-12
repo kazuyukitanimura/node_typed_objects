@@ -10,12 +10,13 @@
 #include "hashly.h"
 #include <ctime>
 #include <unordered_map>
+#include "nanahan_map.hpp"
 
 #define START begin = std::clock()
 #define END(name) duration = 1000 * 1000 * 1000 / size * double(std::clock() - begin) / CLOCKS_PER_SEC; std::cout << (name) << ": " << duration << " ns/op\n"
 
 typedef std::unordered_map<std::string, double > MapType;
-MapType map;
+MapType unordered_map;
 
 int main(int argc, const char * argv[]) {
   // regression test...
@@ -50,13 +51,13 @@ int main(int argc, const char * argv[]) {
   std::cout << "\nstd::unordered_map performance test!\n";
   START;
   for (uint32_t i = size; i--;) {
-    map.insert(std::pair<std::string, double >(std::to_string(i), (double)i));
+    unordered_map.insert(std::pair<std::string, double >(std::to_string(i), (double)i));
   }
   END("set");
 
   START;
   for (uint32_t i = size; i--;) {
-    auto itr = map.find(std::to_string(i));
+    auto itr = unordered_map.find(std::to_string(i));
     if (itr->second != (double)i) {
       std::cout << "actual: " << itr->second << ", expected: " << (double)i << "\n";
     }
@@ -65,9 +66,11 @@ int main(int argc, const char * argv[]) {
 
   START;
   for (uint32_t i = size; i--;) {
-    map.erase(map.find(std::to_string(i)));
+    unordered_map.erase(unordered_map.find(std::to_string(i)));
   }
   END("del");
+
+  std::cout << "\nnanahan_map performance test!\n";
 
   return 0;
 }
