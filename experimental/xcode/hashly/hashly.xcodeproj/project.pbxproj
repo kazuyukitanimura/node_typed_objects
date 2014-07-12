@@ -11,7 +11,6 @@
 		80F7520C1967AEB000AE6A80 /* hashly.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 80F7520B1967AEB000AE6A80 /* hashly.1 */; };
 		80F752141967B1B700AE6A80 /* xxhash.c in Sources */ = {isa = PBXBuildFile; fileRef = 80F752121967B1B700AE6A80 /* xxhash.c */; };
 		80F752171967D8A500AE6A80 /* hashly.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 80F752161967D8A500AE6A80 /* hashly.cpp */; };
-		80F7521A1971274100AE6A80 /* nanahan_map.cc in Sources */ = {isa = PBXBuildFile; fileRef = 80F752191971274100AE6A80 /* nanahan_map.cc */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -35,8 +34,6 @@
 		80F752131967B1B700AE6A80 /* xxhash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xxhash.h; sourceTree = "<group>"; };
 		80F752151967B2F600AE6A80 /* hashly.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hashly.h; sourceTree = "<group>"; };
 		80F752161967D8A500AE6A80 /* hashly.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = hashly.cpp; sourceTree = "<group>"; };
-		80F752181971274100AE6A80 /* nanahan_map.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = nanahan_map.hpp; sourceTree = "<group>"; };
-		80F752191971274100AE6A80 /* nanahan_map.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = nanahan_map.cc; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,8 +66,6 @@
 		80F752081967AEB000AE6A80 /* hashly */ = {
 			isa = PBXGroup;
 			children = (
-				80F752181971274100AE6A80 /* nanahan_map.hpp */,
-				80F752191971274100AE6A80 /* nanahan_map.cc */,
 				80F752121967B1B700AE6A80 /* xxhash.c */,
 				80F752131967B1B700AE6A80 /* xxhash.h */,
 				80F752091967AEB000AE6A80 /* main.cpp */,
@@ -132,7 +127,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				80F7521A1971274100AE6A80 /* nanahan_map.cc in Sources */,
 				80F7520A1967AEB000AE6A80 /* main.cpp in Sources */,
 				80F752171967D8A500AE6A80 /* hashly.cpp in Sources */,
 				80F752141967B1B700AE6A80 /* xxhash.c in Sources */,

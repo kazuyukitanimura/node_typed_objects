@@ -10,7 +10,6 @@
 #include "hashly.h"
 #include <ctime>
 #include <unordered_map>
-#include "nanahan_map.hpp"
 
 #define START begin = std::clock()
 #define END(name) duration = 1000 * 1000 * 1000 / size * double(std::clock() - begin) / CLOCKS_PER_SEC; std::cout << (name) << ": " << duration << " ns/op\n"
