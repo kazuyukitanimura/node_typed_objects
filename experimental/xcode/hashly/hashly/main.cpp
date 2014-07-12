@@ -75,7 +75,9 @@ int main(int argc, const char * argv[]) {
   }
   END("del");
 
-  std::cout << "\ndense_hash_map performance test!\n";
+  std::cout << "\ngoogle::dense_hash_map performance test!\n";
+  dense_hash_map.set_empty_key("");
+  dense_hash_map.set_deleted_key("d");
   START;
   for (uint32_t i = size; i--;) {
     dense_hash_map[keys[i]] = (double)i;
