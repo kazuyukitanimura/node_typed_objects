@@ -70,28 +70,28 @@ Hashly::Hashly(double defaultValue) : _defaultValue(defaultValue) {
    * Maybe we just should use std::vector here, but we want to make sure
    * that we can exploit the cache locality by allocating raw memory
    */
-  arrayedTree =  ArrayMalloc(Bucket*, (1 << 12) - 1); // TODO realloc
+  arrayedTree =  ArrayMalloc(Bucket*, (1 << 11) - 1); // TODO realloc
   arrayedTree[0] = new Bucket(defaultValue);
   minHeight = 0;
 }
 Hashly::~Hashly() {
-  _free(minHeight);
+  uint32_t upper = (1 << (minHeight + 1)) - 1;
+  uint32_t lower = (1 << minHeight) - 1;
+  for (uint32_t i = lower; i < upper; i++) {
+    _free(i);
+  }
   free(arrayedTree);
 }
 
 /**
  * Recursively free the buckets in arrayedTree
  */
-void Hashly::_free(uint32_t height) {
-  uint32_t upper = (1 << (height + 1)) - 1;
-  uint32_t lower = (1 << height) - 1;
-  for (uint32_t i = lower; i < upper; i++) {
-    if (arrayedTree[i] == NULL) {
-      _free(height + 1);
-    } else {
-      delete arrayedTree[i];
-      //arrayedTree[i]->Bucket::~Bucket();
-    }
+void Hashly::_free(uint32_t i) {
+  if (arrayedTree[i] == NULL) {
+    _free((i << 1) + 1);
+    _free((i << 1) + 2);
+  } else {
+    delete arrayedTree[i];
   }
 }
 

@@ -66,7 +66,7 @@ private:
   double _defaultValue;
   uint32_t seed = rdtsc();
   inline void _updateMinHeight(bool decrement);
-  void _free(uint32_t height);
+  void _free(uint32_t i);
 };
 
 
