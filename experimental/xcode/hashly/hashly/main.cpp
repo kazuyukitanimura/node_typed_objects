@@ -11,11 +11,11 @@
 #include <ctime>
 
 #define START begin = std::clock()
-#define END(name) duration = 1000 * double(std::clock() - begin) / CLOCKS_PER_SEC; std::cout << (name) << ": " << duration << " mili seconds\n"
+#define END(name) duration = 1000 * double(std::clock() - begin) / CLOCKS_PER_SEC; std::cout << (name) << ": " << duration << " milliseconds\n"
 
 
 int main(int argc, const char * argv[]) {
-  // dumb unit test...
+  // regression test...
   std::cout << "Hello, World!\n";
   Hashly* h = new Hashly(0.0);
   uint32_t size = 10000;
@@ -36,12 +36,13 @@ int main(int argc, const char * argv[]) {
   }
   END("get");
 
-  delete h;
   START;
   for (uint32_t i = size; i--;) {
     h->del(std::to_string(i));
   }
   END("del");
+
+  delete h;
 
   return 0;
 }
