@@ -16,8 +16,8 @@
 #define START begin = std::clock()
 #define END(name) duration = 1000 * 1000 * 1000 / size * double(std::clock() - begin) / CLOCKS_PER_SEC; std::cout << (name) << ": " << duration << " ns/op\n"
 
-typedef std::unordered_map<std::string, double > MapType;
-MapType unordered_map;
+std::unordered_map<std::string, double > unordered_map;
+google::dense_hash_map<std::string, double> dense_hash_map;
 
 int main(int argc, const char * argv[]) {
   // regression test...
@@ -57,15 +57,14 @@ int main(int argc, const char * argv[]) {
   std::cout << "\nstd::unordered_map performance test!\n";
   START;
   for (uint32_t i = size; i--;) {
-    unordered_map.insert(std::pair<std::string, double >(keys[i], (double)i));
+    unordered_map[keys[i]] = (double)i;
   }
   END("set");
 
   START;
   for (uint32_t i = size; i--;) {
-    auto itr = unordered_map.find(keys[i]);
-    if (itr->second != (double)i) {
-      std::cout << "actual: " << itr->second << ", expected: " << (double)i << "\n";
+    if (unordered_map[keys[i]] != (double)i) {
+      std::cout << "actual: " << unordered_map[keys[i]] << ", expected: " << (double)i << "\n";
     }
   }
   END("get");
@@ -76,7 +75,26 @@ int main(int argc, const char * argv[]) {
   }
   END("del");
 
-  std::cout << "\nnanahan_map performance test!\n";
+  std::cout << "\ndense_hash_map performance test!\n";
+  START;
+  for (uint32_t i = size; i--;) {
+    dense_hash_map[keys[i]] = (double)i;
+  }
+  END("set");
+
+  START;
+  for (uint32_t i = size; i--;) {
+    if (dense_hash_map[keys[i]] != (double)i) {
+      std::cout << "actual: " << dense_hash_map[keys[i]] << ", expected: " << (double)i << "\n";
+    }
+  }
+  END("get");
+
+  START;
+  for (uint32_t i = size; i--;) {
+    dense_hash_map.erase(keys[i]);
+  }
+  END("del");
 
   return 0;
 }
