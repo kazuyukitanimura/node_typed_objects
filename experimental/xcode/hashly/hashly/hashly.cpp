@@ -97,8 +97,8 @@ void Hashly::_free(uint32_t i) {
 
 void Hashly::_updateMinHeight(bool decrement) {
   minHeight -= decrement;
-  uint32_t upper = (1 << (minHeight + 1)) - 1;
   uint32_t lower = (1 << minHeight) - 1;
+  uint32_t upper = (lower << 1) | 1;
   bool res = true;
   for (uint32_t i = lower; i < upper && res; i++) {
     res = (arrayedTree[i] == NULL);
