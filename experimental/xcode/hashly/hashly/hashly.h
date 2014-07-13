@@ -45,11 +45,13 @@ private:
   ~Bucket();
   double find(uint32_t hash);
   bool insert(Item* newItem);
+  bool rInsert(Item* newItem);
   bool insert(const char *key, double val, uint32_t hash);
   bool remove(uint32_t hash);
   double _defaultValue;
   Item* items;
   uint8_t count;
+  uint8_t rCount;
 };
 
 class Hashly {

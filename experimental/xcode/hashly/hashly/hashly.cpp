@@ -12,15 +12,24 @@
 Bucket::Bucket(double defaultValue) : _defaultValue(defaultValue) {
   items = new Item[BUCKET_SIZE];
   count = 0;
+  rCount = BIT;
 }
 Bucket::~Bucket() {
   delete[] items;
 }
 
 double Bucket::find(uint32_t hash) {
-  for (uint8_t i = count; i--;) {
-    if (items[i].hash == hash) { // or compare the key
-      return items[i].val;
+  if (hash & 1) {
+    for (uint8_t i = rCount; i < BIT; i++) {
+      if (items[i].hash == hash) { // or compare the key
+        return items[i].val;
+      }
+    }
+  } else {
+    for (uint8_t i = count; i--;) {
+      if (items[i].hash == hash) { // or compare the key
+        return items[i].val;
+      }
     }
   }
   return _defaultValue;
@@ -34,30 +43,63 @@ bool Bucket::insert(Item* newItem) {
   return true;
 }
 
+bool Bucket::rInsert(Item* newItem) {
+  rCount--;
+  items[rCount].key = newItem->key;
+  items[rCount].val = newItem->val;
+  items[rCount].hash = newItem->hash;
+  return true;
+}
+
 bool Bucket::insert(const char *key, double val, uint32_t hash) {
-  for (uint8_t i = count; i--;) {
-    if (items[i].hash == hash) { // or compare the key
-      items[i].val = val;
-      return false;
+  if (hash & 1) {
+    for (uint8_t i = rCount; i < BIT; i++) {
+      if (items[i].hash == hash) { // or compare the key
+        items[i].val = val;
+        return false;
+      }
     }
+    /**
+     * We do not do this in a copy constructor in order to avoid allocating
+     * extra memory for the right hand side values (i.e., key, val, hash)
+     */
+    rCount--;
+    items[rCount].key = key;
+    items[rCount].val = val;
+    items[rCount].hash = hash;
+  } else {
+    for (uint8_t i = count; i--;) {
+      if (items[i].hash == hash) { // or compare the key
+        items[i].val = val;
+        return false;
+      }
+    }
+    /**
+     * We do not do this in a copy constructor in order to avoid allocating
+     * extra memory for the right hand side values (i.e., key, val, hash)
+     */
+    items[count].key = key;
+    items[count].val = val;
+    items[count].hash = hash;
+    count++;
   }
-  /**
-   * We do not do this in a copy constructor in order to avoid allocating
-   * extra memory for the right hand side values (i.e., key, val, hash)
-   */
-  items[count].key = key;
-  items[count].val = val;
-  items[count].hash = hash;
-  count++;
   return true;
 }
 
 bool Bucket::remove(uint32_t hash) {
-  for (uint8_t i = count; i--;) {
-    if (items[i].hash == hash) { // or compare the key
-      items[i] = items[count - 1];
-      count--;
-      return true;
+  if (hash & 1) {
+    for (uint8_t i = rCount; i < BIT; i++) {
+      if (items[i].hash == hash) { // or compare the key
+        items[i] = items[rCount++];
+        return true;
+      }
+    }
+  } else {
+    for (uint8_t i = count; i--;) {
+      if (items[i].hash == hash) { // or compare the key
+        items[i] = items[--count];
+        return true;
+      }
     }
   }
   return false;
@@ -112,7 +154,7 @@ double Hashly::get(const char *key, int len) {
   HashlyFor {
     LocalBucket;
     IfBucket {
-       return bucket->find(hash);
+      return bucket->find(hash);
     }
     NextI;
   }
@@ -126,7 +168,8 @@ bool Hashly::set(const char *key, int len, double val) {
     LocalBucket;
     IfBucket {
       uint8_t count = bucket->count;
-      if (count < BUCKET_SIZE) {
+      uint8_t rCount = bucket->rCount;
+      if (count != rCount) {
         bucket->insert(key, val, hash);
         return true;
       } else { // it is full, so add a bucket
@@ -143,6 +186,14 @@ bool Hashly::set(const char *key, int len, double val) {
           }
         }
         leftChild->count = count;
+        for (uint8_t j = rCount; j < BIT; j++) {
+          Item item = bucket->items[j];
+          if (item.hash & mask) {
+            rightChild->rInsert(&item);
+            bucket->items[j] = bucket->items[rCount++];
+          }
+        }
+        leftChild->rCount = rCount;
         _updateMinHeight(false);
       }
     }
@@ -161,8 +212,9 @@ bool Hashly::del(const char *key, int len) {
   HashlyFor {
     LocalBucket;
     IfBucket {
-      bool res = bucket->remove(hash);
-      if (res && ! (bucket->count) && i) { // if it becomes empty after deletion
+      bool res = false;
+      res = bucket->remove(hash);
+      if (res && ! (bucket->count) && (bucket->rCount == BIT) && i) { // if it becomes empty after deletion
         uint32_t left = i & 1; // left is always an odd number
         uint32_t i_1 = i - 1;
         Bucket* sibling = arrayedTree[i_1 + (left << 1)];
