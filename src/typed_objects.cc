@@ -3,10 +3,8 @@
 #include <stdlib.h>
 
 #include "typed_objects.h"
-#include <google/dense_hash_map>
 
 using namespace v8;
-google::dense_hash_map <const char*, double> dense_hash_map;
 
 Handle<Value> TypedObject::Get(const Arguments& args) {
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
@@ -27,6 +25,8 @@ Handle<Value> TypedObject::Get(const Arguments& args) {
   }
 
   TypedObject* obj = ObjectWrap::Unwrap<TypedObject>(args.This());
+  String::Utf8Value key(args[0]->ToString());
+  obj->dense_hash_map[*key];
   return scope.Close(obj->defaultValue);
 }
 
@@ -49,17 +49,8 @@ Handle<Value> TypedObject::Set(const Arguments& args) {
   }
 
   TypedObject* obj = ObjectWrap::Unwrap<TypedObject>(args.This());
-  String::AsciiValue keyAscii(args[0]->ToString());
-}
-
-Handle<Value> TypedObject::Has(const Arguments& args) {
-#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
-  HandleScope scope;
-#else
-  Isolate* isolate = Isolate::GetCurrent();
-  HandleScope scope(isolate);
-#endif
-
+  String::Utf8Value key(args[0]->ToString());
+  obj->dense_hash_map[*key] = args[1]->NumberValue();
 }
 
 Handle<Value> TypedObject::Del(const Arguments& args) {
@@ -70,6 +61,19 @@ Handle<Value> TypedObject::Del(const Arguments& args) {
   HandleScope scope(isolate);
 #endif
 
+  if (args.Length() != 1) {
+    return ThrowException(Exception::Error(
+#if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
+      String::New("TypedObject#Get takes exactly one argument.")
+#else
+      String::NewFromUtf8(isolate, "TypedObject#Get takes exactly one argument.")
+#endif
+    ));
+  }
+
+  TypedObject* obj = ObjectWrap::Unwrap<TypedObject>(args.This());
+  String::Utf8Value key(args[0]->ToString());
+  obj->dense_hash_map.erase(*key);
 }
 
 Handle<Value> TypedObject::New(const Arguments& args) {
@@ -100,7 +104,7 @@ Handle<Value> TypedObject::New(const Arguments& args) {
 #endif
     ));
   }
-  if (!args[0]->IsNumber() || args[0]->IsInt32() || args[0]->IsUint32()) {
+  if (!args[0]->IsNumber()) {
     return ThrowException(Exception::Error(
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
       String::New("Unsupported default value.")
@@ -112,6 +116,8 @@ Handle<Value> TypedObject::New(const Arguments& args) {
 
   TypedObject* obj = new TypedObject();
   obj->defaultValue = args[0];
+  obj->dense_hash_map.set_empty_key("");
+  obj->dense_hash_map.set_deleted_key("d");
   obj->Wrap(args.This());
 
   return args.This();
