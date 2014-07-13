@@ -26,8 +26,8 @@ Handle<Value> TypedObject::Get(const Arguments& args) {
 
   TypedObject* obj = ObjectWrap::Unwrap<TypedObject>(args.This());
   String::Utf8Value key(args[0]->ToString());
-  obj->dense_hash_map[*key];
-  return scope.Close(obj->defaultValue);
+  return scope.Close(v8::Number::New(obj->dense_hash_map[*key]));
+  //return scope.Close(obj->defaultValue);
 }
 
 Handle<Value> TypedObject::Set(const Arguments& args) {
@@ -143,7 +143,6 @@ void TypedObject::Init(Handle<Object> exports) {
   //constructor->PrototypeTemplate()->SetNamedPropertyHandler(Get, Set, Has, Del, For);
   NODE_SET_PROTOTYPE_METHOD(constructor, "get", Get);
   NODE_SET_PROTOTYPE_METHOD(constructor, "set", Set);
-  NODE_SET_PROTOTYPE_METHOD(constructor, "has", Has);
   NODE_SET_PROTOTYPE_METHOD(constructor, "del", Del);
 
   exports->Set(name, constructor->GetFunction());

@@ -10,7 +10,7 @@ describe('TypedObject', function() {
   to.set('B-', 2.2);
   describe('#Get', function() {
     it('should to the expected value', function() {
-      console.log(to);
+      //console.log(to);
       assert.deepEqual(to.get('a'), 1.1);
       assert.deepEqual(to.get('b'), 1.2);
       assert.deepEqual(to.get('3'), 1.3);
