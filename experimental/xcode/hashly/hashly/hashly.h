@@ -23,7 +23,7 @@ inline unsigned int rdtsc() {
 #define BUCKET_SIZE 32
 #define BIT 32
 #define ArrayMalloc(type, size) ((type *) malloc((size) * sizeof(type)))
-#define Hash uint32_t hash = XXH32(key.c_str(), (int) key.length(), seed)
+#define Hash uint32_t hash = XXH32(key, len, seed)
 #define I uint32_t i = (1 << minHeight) - 1 + (minHeight? (hash >> (BIT - minHeight)): 0)
 //#define I uint32_t i = (1 << minHeight) - 1 + (uint32_t)((uint64_t)hash >> (BIT - minHeight))
 #define HashlyFor for (uint8_t bit = minHeight; bit < BIT; bit++)
@@ -33,7 +33,7 @@ inline unsigned int rdtsc() {
 
 
 struct Item {
-  std::string key;
+  const char* key;
   double val;
   uint32_t hash;
 };
@@ -45,7 +45,7 @@ private:
   ~Bucket();
   double find(uint32_t hash);
   bool insert(Item* newItem);
-  bool insert(const std::string &key, double val, uint32_t hash);
+  bool insert(const char *key, double val, uint32_t hash);
   bool remove(uint32_t hash);
   double _defaultValue;
   Item* items;
@@ -56,10 +56,10 @@ class Hashly {
 public:
   Hashly(double defaultValue);
   ~Hashly();
-  double get(const std::string &key);
-  bool set(const std::string &key, double val);
-  bool has(const std::string &key);
-  bool del(const std::string &key);
+  double get(const char *key, int len);
+  bool set(const char *key, int len, double val);
+  bool has(const char *key, int len);
+  bool del(const char *key, int len);
 private:
   Bucket** arrayedTree;
   uint8_t minHeight;

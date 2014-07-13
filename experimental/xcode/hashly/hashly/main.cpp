@@ -16,14 +16,14 @@
 #define START begin = std::clock()
 #define END(name) duration = 1000 * 1000 * 1000 / size * double(std::clock() - begin) / CLOCKS_PER_SEC; std::cout << (name) << ": " << duration << " ns/op\n"
 
-std::unordered_map<std::string, double > unordered_map;
-google::dense_hash_map<std::string, double> dense_hash_map;
+std::unordered_map<const char*, double > unordered_map;
+google::dense_hash_map<const char*, double> dense_hash_map;
 
 int main(int argc, const char * argv[]) {
   // regression test...
   std::cout << "Hashly performance test!\n";
   Hashly* h = new Hashly(0.0);
-  uint32_t size = 10000;
+  uint32_t size = 50000;
   clock_t begin;
   double duration;
   std::vector<std::string> keys(size);
@@ -34,21 +34,21 @@ int main(int argc, const char * argv[]) {
 
   START;
   for (uint32_t i = size; i--;) {
-    h->set(keys[i], (double)i);
+    h->set(keys[i].c_str(), (int)keys[i].length(), (double)i);
   }
   END("set");
 
   START;
   for (uint32_t i = size; i--;) {
-    if (h->get(keys[i]) != (double)i) {
-      std::cout << "actual: " << h->get(keys[i]) << ", expected: " << (double)i << "\n";
+    if (h->get(keys[i].c_str(), (int)keys[i].length()) != (double)i) {
+      std::cout << "actual: " << h->get(keys[i].c_str(), (int)keys[i].length()) << ", expected: " << (double)i << "\n";
     }
   }
   END("get");
 
   START;
   for (uint32_t i = size; i--;) {
-    h->del(keys[i]);
+    h->del(keys[i].c_str(), (int)keys[i].length());
   }
   END("del");
 
@@ -57,21 +57,21 @@ int main(int argc, const char * argv[]) {
   std::cout << "\nstd::unordered_map performance test!\n";
   START;
   for (uint32_t i = size; i--;) {
-    unordered_map[keys[i]] = (double)i;
+    unordered_map[keys[i].c_str()] = (double)i;
   }
   END("set");
 
   START;
   for (uint32_t i = size; i--;) {
-    if (unordered_map[keys[i]] != (double)i) {
-      std::cout << "actual: " << unordered_map[keys[i]] << ", expected: " << (double)i << "\n";
+    if (unordered_map[keys[i].c_str()] != (double)i) {
+      std::cout << "actual: " << unordered_map[keys[i].c_str()] << ", expected: " << (double)i << "\n";
     }
   }
   END("get");
 
   START;
   for (uint32_t i = size; i--;) {
-    unordered_map.erase(unordered_map.find(keys[i]));
+    unordered_map.erase(keys[i].c_str());
   }
   END("del");
 
@@ -80,21 +80,21 @@ int main(int argc, const char * argv[]) {
   dense_hash_map.set_deleted_key("d");
   START;
   for (uint32_t i = size; i--;) {
-    dense_hash_map[keys[i]] = (double)i;
+    dense_hash_map[keys[i].c_str()] = (double)i;
   }
   END("set");
 
   START;
   for (uint32_t i = size; i--;) {
-    if (dense_hash_map[keys[i]] != (double)i) {
-      std::cout << "actual: " << dense_hash_map[keys[i]] << ", expected: " << (double)i << "\n";
+    if (dense_hash_map[keys[i].c_str()] != (double)i) {
+      std::cout << "actual: " << dense_hash_map[keys[i].c_str()] << ", expected: " << (double)i << "\n";
     }
   }
   END("get");
 
   START;
   for (uint32_t i = size; i--;) {
-    dense_hash_map.erase(keys[i]);
+    dense_hash_map.erase(keys[i].c_str());
   }
   END("del");
 

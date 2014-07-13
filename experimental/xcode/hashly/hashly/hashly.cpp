@@ -34,7 +34,7 @@ bool Bucket::insert(Item* newItem) {
   return true;
 }
 
-bool Bucket::insert(const std::string &key, double val, uint32_t hash) {
+bool Bucket::insert(const char *key, double val, uint32_t hash) {
   for (uint8_t i = count; i--;) {
     if (items[i].hash == hash) { // or compare the key
       items[i].val = val;
@@ -70,7 +70,7 @@ Hashly::Hashly(double defaultValue) : _defaultValue(defaultValue) {
    * Maybe we just should use std::vector here, but we want to make sure
    * that we can exploit the cache locality by allocating raw memory
    */
-  arrayedTree =  ArrayMalloc(Bucket*, (1 << 11) - 1); // TODO realloc
+  arrayedTree =  ArrayMalloc(Bucket*, (1 << 13) - 1); // TODO realloc
   arrayedTree[0] = new Bucket(defaultValue);
   minHeight = 0;
 }
@@ -106,7 +106,7 @@ void Hashly::_updateMinHeight(bool decrement) {
   minHeight += res;
 }
 
-double Hashly::get(const std::string &key) {
+double Hashly::get(const char *key, int len) {
   Hash;
   I;
   HashlyFor {
@@ -119,7 +119,7 @@ double Hashly::get(const std::string &key) {
   return _defaultValue;
 }
 
-bool Hashly::set(const std::string &key, double val) {
+bool Hashly::set(const char *key, int len, double val) {
   Hash;
   I;
   HashlyFor {
@@ -151,11 +151,11 @@ bool Hashly::set(const std::string &key, double val) {
   return false; // you never reach here, fake IDE
 }
 
-bool Hashly::has(const std::string &key) {
-  return get(key) != _defaultValue;
+bool Hashly::has(const char *key, int len) {
+  return get(key, len) != _defaultValue;
 };
 
-bool Hashly::del(const std::string &key) {
+bool Hashly::del(const char *key, int len) {
   Hash;
   I;
   HashlyFor {
