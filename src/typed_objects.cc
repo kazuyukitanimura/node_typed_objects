@@ -2,10 +2,11 @@
 #include <node_buffer.h>
 #include <stdlib.h>
 
-#include "xxhash.h"
 #include "typed_objects.h"
+#include <google/dense_hash_map>
 
 using namespace v8;
+google::dense_hash_map <const char*, double> dense_hash_map;
 
 Handle<Value> TypedObject::Get(const Arguments& args) {
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
@@ -49,7 +50,6 @@ Handle<Value> TypedObject::Set(const Arguments& args) {
 
   TypedObject* obj = ObjectWrap::Unwrap<TypedObject>(args.This());
   String::AsciiValue keyAscii(args[0]->ToString());
-  unsigned int hash = ::XXH32(*keyAscii, keyAscii.length(), obj->seed);
 }
 
 Handle<Value> TypedObject::Has(const Arguments& args) {
@@ -100,7 +100,7 @@ Handle<Value> TypedObject::New(const Arguments& args) {
 #endif
     ));
   }
-  if (!args[0]->IsNumber()) { // it will also check !args[1]->IsInt32() && !args[1]->IsUint32()
+  if (!args[0]->IsNumber() || args[0]->IsInt32() || args[0]->IsUint32()) {
     return ThrowException(Exception::Error(
 #if NODE_MAJOR_VERSION == 0 && NODE_MINOR_VERSION < 11
       String::New("Unsupported default value.")
@@ -111,9 +111,7 @@ Handle<Value> TypedObject::New(const Arguments& args) {
   }
 
   TypedObject* obj = new TypedObject();
-  obj->seed = rdtsc();
   obj->defaultValue = args[0];
-  obj->defaultValueType = (args[0]->IsInt32() || args[0]->IsUint32())? Int: Double;
   obj->Wrap(args.This());
 
   return args.This();

@@ -2,11 +2,10 @@ var assert = require("assert");
 var TypedObject = require('..');
 
 describe('TypedObject', function() {
-  var to = new TypedObject(1.0, {
-    a: 1.1,
-    'b': 1.2,
-    3: 1.3
-  });
+  var to = new TypedObject(1.0);
+  to.set('a', 1.1);
+  to.set('2', 1.2);
+  to.set(3, 1.3);
   to.set('A', 2.1);
   to.set('B-', 2.2);
   describe('#Get', function() {
