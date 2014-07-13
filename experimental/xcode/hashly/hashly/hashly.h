@@ -24,8 +24,7 @@ inline unsigned int rdtsc() {
 #define BIT 32
 #define ArrayMalloc(type, size) ((type *) malloc((size) * sizeof(type)))
 #define Hash uint32_t hash = XXH32(key, len, seed)
-#define I uint32_t i = (1 << minHeight) - 1 + (minHeight? (hash >> (BIT - minHeight)): 0)
-//#define I uint32_t i = (1 << minHeight) - 1 + (uint32_t)((uint64_t)hash >> (BIT - minHeight))
+#define I uint32_t i = baseI + (minHeight? (hash >> minHeightShift): 0)
 #define HashlyFor for (uint8_t bit = minHeight; bit < BIT; bit++)
 #define NextI i = (i << 1) + 1 + ((hash >> (BIT - 1 - bit)) & 1)
 #define LocalBucket Bucket* bucket = arrayedTree[i]
@@ -65,6 +64,8 @@ public:
 private:
   Bucket** arrayedTree;
   uint8_t minHeight;
+  uint32_t baseI;
+  uint8_t minHeightShift;
   double _defaultValue;
   uint32_t seed = rdtsc();
   inline void _updateMinHeight(bool decrement);

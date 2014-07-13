@@ -23,7 +23,7 @@ int main(int argc, const char * argv[]) {
   // regression test...
   std::cout << "Hashly performance test!\n";
   Hashly* h = new Hashly(0.0);
-  uint32_t size = 50000;
+  uint32_t size = 10000;
   clock_t begin;
   double duration;
   std::vector<std::string> keys(size);

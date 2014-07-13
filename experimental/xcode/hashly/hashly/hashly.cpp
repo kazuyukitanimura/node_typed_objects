@@ -12,7 +12,7 @@
 Bucket::Bucket(double defaultValue) : _defaultValue(defaultValue) {
   items = new Item[BUCKET_SIZE];
   count = 0;
-  rCount = BIT;
+  rCount = BUCKET_SIZE;
 }
 Bucket::~Bucket() {
   delete[] items;
@@ -20,7 +20,7 @@ Bucket::~Bucket() {
 
 double Bucket::find(uint32_t hash) {
   if (hash & 1) {
-    for (uint8_t i = rCount; i < BIT; i++) {
+    for (uint8_t i = rCount; i < BUCKET_SIZE; i++) {
       if (items[i].hash == hash) { // or compare the key
         return items[i].val;
       }
@@ -53,7 +53,7 @@ bool Bucket::rInsert(Item* newItem) {
 
 bool Bucket::insert(const char *key, double val, uint32_t hash) {
   if (hash & 1) {
-    for (uint8_t i = rCount; i < BIT; i++) {
+    for (uint8_t i = rCount; i < BUCKET_SIZE; i++) {
       if (items[i].hash == hash) { // or compare the key
         items[i].val = val;
         return false;
@@ -88,7 +88,7 @@ bool Bucket::insert(const char *key, double val, uint32_t hash) {
 
 bool Bucket::remove(uint32_t hash) {
   if (hash & 1) {
-    for (uint8_t i = rCount; i < BIT; i++) {
+    for (uint8_t i = rCount; i < BUCKET_SIZE; i++) {
       if (items[i].hash == hash) { // or compare the key
         items[i] = items[rCount++];
         return true;
@@ -117,8 +117,8 @@ Hashly::Hashly(double defaultValue) : _defaultValue(defaultValue) {
   minHeight = 0;
 }
 Hashly::~Hashly() {
-  uint32_t upper = (1 << (minHeight + 1)) - 1;
-  uint32_t lower = (1 << minHeight) - 1;
+  uint32_t lower = baseI;
+  uint32_t upper = (lower << 1) | 1;
   for (uint32_t i = lower; i < upper; i++) {
     _free(i);
   }
@@ -139,13 +139,15 @@ void Hashly::_free(uint32_t i) {
 
 void Hashly::_updateMinHeight(bool decrement) {
   minHeight -= decrement;
-  uint32_t lower = (1 << minHeight) - 1;
+  uint32_t lower = baseI;
   uint32_t upper = (lower << 1) | 1;
   bool res = true;
   for (uint32_t i = lower; i < upper && res; i++) {
     res = (arrayedTree[i] == NULL);
   }
   minHeight += res;
+  baseI = (1 << minHeight) - 1;
+  minHeightShift = BIT - minHeight;
 }
 
 double Hashly::get(const char *key, int len) {
@@ -173,7 +175,7 @@ bool Hashly::set(const char *key, int len, double val) {
         bucket->insert(key, val, hash);
         return true;
       } else { // it is full, so add a bucket
-        arrayedTree[i] = NULL;
+        arrayedTree[i] = NULL; // TODO fix this memory leak by calling its deconstructor
         uint32_t i_shift = i << 1;
         Bucket* leftChild = arrayedTree[i_shift | 1] = bucket;
         Bucket* rightChild = arrayedTree[i_shift + 2] = new Bucket(_defaultValue);
@@ -186,7 +188,7 @@ bool Hashly::set(const char *key, int len, double val) {
           }
         }
         leftChild->count = count;
-        for (uint8_t j = rCount; j < BIT; j++) {
+        for (uint8_t j = rCount; j < BUCKET_SIZE; j++) {
           Item item = bucket->items[j];
           if (item.hash & mask) {
             rightChild->rInsert(&item);
@@ -214,7 +216,7 @@ bool Hashly::del(const char *key, int len) {
     IfBucket {
       bool res = false;
       res = bucket->remove(hash);
-      if (res && ! (bucket->count) && (bucket->rCount == BIT) && i) { // if it becomes empty after deletion
+      if (res && ! (bucket->count) && (bucket->rCount == BUCKET_SIZE) && i) { // if it becomes empty after deletion
         uint32_t left = i & 1; // left is always an odd number
         uint32_t i_1 = i - 1;
         Bucket* sibling = arrayedTree[i_1 + (left << 1)];
